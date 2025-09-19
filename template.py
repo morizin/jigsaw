@@ -20,7 +20,7 @@ list_of_files : list[str] = [
         "docker-compose.yaml",
         ".github/workflow/.gitkeep",
         ".gitignore",
-        "research/research.ipynb"
+        "research/research.ipynb", 
         "params.yaml",
         "schema.yaml",
         "main.py",
