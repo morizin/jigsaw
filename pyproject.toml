@@ -1,0 +1,22 @@
+[project]
+name = "jigsaw-competition"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ensure>=1.0.4",
+    "flask>=3.1.2",
+    "flask-cors>=6.0.1",
+    "joblib>=1.5.2",
+    "matplotlib>=3.10.6",
+    "mlflow>=3.4.0",
+    "notebook>=7.4.5",
+    "numpy>=2.3.3",
+    "pandas>=2.3.2",
+    "python-box>=7.3.2",
+    "pyyaml>=6.0.2",
+    "scikit-learn>=1.7.2",
+    "tqdm>=4.67.1",
+    "types-pyyaml>=6.0.12.20250915",
+]
