@@ -974,12 +974,14 @@ dependencies = [
     { name = "flask" },
     { name = "flask-cors" },
     { name = "joblib" },
+    { name = "kagglehub" },
     { name = "matplotlib" },
     { name = "mlflow" },
     { name = "notebook" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "python-box" },
+    { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "scikit-learn" },
     { name = "tqdm" },
@@ -992,12 +994,14 @@ requires-dist = [
     { name = "flask", specifier = ">=3.1.2" },
     { name = "flask-cors", specifier = ">=6.0.1" },
     { name = "joblib", specifier = ">=1.5.2" },
+    { name = "kagglehub", specifier = ">=0.3.13" },
     { name = "matplotlib", specifier = ">=3.10.6" },
     { name = "mlflow", specifier = ">=3.4.0" },
     { name = "notebook", specifier = ">=7.4.5" },
     { name = "numpy", specifier = ">=2.3.3" },
     { name = "pandas", specifier = ">=2.3.2" },
     { name = "python-box", specifier = ">=7.3.2" },
+    { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "scikit-learn", specifier = ">=1.7.2" },
     { name = "tqdm", specifier = ">=4.67.1" },
@@ -1250,6 +1254,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/0a/c9/a883ce65eb27905ce77ace410d83587c82ea64dc85a48d1f7ed52bcfa68d/jupyterlab_server-2.27.3.tar.gz", hash = "sha256:eb36caca59e74471988f0ae25c77945610b887f777255aa21f8065def9e51ed4", size = 76173 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/54/09/2032e7d15c544a0e3cd831c51d77a8ca57f7555b2e1b2922142eddb02a84/jupyterlab_server-2.27.3-py3-none-any.whl", hash = "sha256:e697488f66c3db49df675158a77b3b017520d772c6e1548c7d9bcc5df7944ee4", size = 59700 },
+]
+
+[[package]]
+name = "kagglehub"
+version = "0.3.13"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1c/12/e13c1c8b203535b15dacc420c0f1596dda67463175ff1e4404af21815bdd/kagglehub-0.3.13.tar.gz", hash = "sha256:d3c8b6250627d665096cd91a9487559bf5ed61be607eaf63d14511b20eea646e", size = 113694 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/8e/4077b08b95a1f8302c694a8b399bd413815fbe89045c41e6e08cd7d9439a/kagglehub-0.3.13-py3-none-any.whl", hash = "sha256:e00dec8b81396cbad9c7b5eb62a33cf8ae27da26227abd196ed8f054c845ca00", size = 68257 },
 ]
 
 [[package]]
