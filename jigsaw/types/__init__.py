@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator, validate_call
+from pydantic import BaseModel, field_validator, model_validator, validate_call
 from pathlib import Path
 from typing import Any
 from .. import logger
@@ -20,7 +20,7 @@ class ZipFile(BaseModel):
 class Directory(BaseModel):
     path : Path
 
-    @field_validator('path', mode= 'before')
+    @field_validator("path", mode= 'before')
     @validate_call
     def is_directory(cls, v : str | Path) -> Path:
        # Check if its a valid directory format 

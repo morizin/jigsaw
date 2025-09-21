@@ -18,4 +18,3 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger("JigsawLogger")
-
