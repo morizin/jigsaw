@@ -6,3 +6,7 @@ data-ingestion:
     source: kaggle
     type: competition
     name: jigsaw-agile-community-rules
+
+data-validation:
+  outdir: "data/validation"
+  statistics: false

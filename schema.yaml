@@ -1,1 +1,15 @@
-key: value
+raw:
+  train: ["train.csv"]
+  test: ["test.csv"]
+  columns:
+    row_id: int64
+    body: str
+    rule: str
+    subreddit: str
+    positive_example_1: str
+    positive_example_2: str
+    negative_example_1: str
+    negative_example_2: str
+    rule_violation: int64
+  
+  target: rule_violation
