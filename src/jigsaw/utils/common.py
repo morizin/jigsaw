@@ -1,6 +1,6 @@
 from .. import logger
 from pydantic import validate_call
-from ..types import ZipFile, Directory
+from ..entity.common import ZipFile, Directory
 from pathlib import Path
 import zipfile
 import os

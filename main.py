@@ -1,3 +1,3 @@
-from jigsaw.utils.common import logger
+from src.jigsaw.pipelines.data_ingestion_pipeline import DataIngestionPipeline
 
-logger.info("Logger Works Fine")
+DataIngestionPipeline().kickoff()

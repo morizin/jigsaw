@@ -3,10 +3,10 @@ import subprocess
 import os
 import logging
 
-logging.basicConfig(level = logging.INFO, format = '[%(asctime)s: %(message)s :')
+logging.basicConfig(level = logging.INFO, format = '[%(asctime)s: %(message)s')
 
 subprocess.call(['uv', 'init'])
-project_name : str = "jigsawACR"
+project_name : str = "jigsaw"
 list_of_files : list[str] = [
         f'src/{project_name}/__init__.py',
         f'src/{project_name}/pipelines/__init__.py',
@@ -16,6 +16,8 @@ list_of_files : list[str] = [
         f'src/{project_name}/config/config.py',
         f'src/{project_name}/components/__init__.py',
         f'src/{project_name}/constants/__init__.py',
+        f'src/{project_name}/entity/__init__.py',
+        f'src/{project_name}/entity/common.py',
         "Dockerfile",
         "docker-compose.yaml",
         ".github/workflow/.gitkeep",

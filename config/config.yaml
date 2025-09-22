@@ -1,8 +1,8 @@
 artifact_root: "artifacts/"
 
 data-ingestion: 
+  outdir: "data/"
   raw:
     source: kaggle
     type: competition
     name: jigsaw-agile-community-rules
-    outdir: "./artifacts/data/"
