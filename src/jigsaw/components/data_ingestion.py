@@ -21,7 +21,7 @@ class DataIngestionComponent:
         for datasource, name in zip(self.config.sources, self.config.names):
             if datasource.source.lower().strip() == 'kaggle':
                 if datasource.type.lower().strip() == 'competition':
-                    path = kagglehub.competition_download(datasource.name, force_download = True)
+                    path = kagglehub.competition_download(datasource.name,) 
                     target_path = Directory(path = self.config.outdir.path / name)
                     logger.info(f"Downloading {datasource.name} competition dataset to {target_path.path.as_posix()}")
                     subprocess.call(f'mv {path.rstrip("/") + "/*"} {target_path.path.as_posix().rstrip("/") + "/"}', shell = True)

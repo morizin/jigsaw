@@ -15,3 +15,4 @@ try:
     logger.info("DataValidationPipeline Completed")
 except Exception as e:
     logger.error(f"Error during data validation {e}")
+    raise e
