@@ -49,6 +49,7 @@ class DataValidationComponent:
                 self.find_mismatch_dtype(
                     self.indir / schema.name / file, schema, train=True
                 )
+                self.find_data_redundancy( self.indir / schema.name / file, features = schema.features)
 
             for file in schema.test:
                 self.find_missing_columns(
@@ -57,6 +58,7 @@ class DataValidationComponent:
                 self.find_mismatch_dtype(
                     self.indir / schema.name / file, schema, train=False
                 )
+                self.find_data_redundancy(self.indir/ schema.name / file, features = schema.features)
 
         save_json(self.status, self.outdir / "status.json")
 
@@ -109,6 +111,25 @@ class DataValidationComponent:
             logger.info(f"[SUCCESS] Check Mismatch Datatype: {schema.name}.{data_path.name}")
         else:
             logger.error(f"[FAILED] Check Mismatch Datatype: {schema.name}.{data_path.name}")
+
+    def find_data_redundancy(self, data_path: FilePath, features: list[str]):
+        validation_status = False
+        try:
+            file_name = ".".join(str(data_path).split("/")[-2:])
+            data = read_csv(data_path)
+            nrow = data.shape[0]
+            data = data.drop_duplicates(subset = features, ignore_index = True)
+            if nrow - data.shape[0] > 0:
+                logger.warning(f"Checking Data Redundancy [DETECTED] : {nrow - data.shape[0]} duplicates has been found in {file_name}")
+                logger.warning(f"DataPurityWarning: {file_name} is {(data.shape[0]*100)/nrow:.3f}% pure ") 
+                validation_status = False
+            else:
+                logger.info(f"Checking Data Redundancy [NOT FOUND] : no duplicates in {file_name}")
+                validation_status = True
+
+        except Exception as e:
+            logger.error(f"Checking Data Redundancy [FAILED]: {e}")
+        self.status[file_name]['data_redundancy'] = not validation_status
 
     def get_statistics(self, path: FilePath):
         pass

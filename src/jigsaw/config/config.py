@@ -60,6 +60,7 @@ class ConfigurationManager:
                         schema=schema.columns.to_dict(),
                         train=schema.train,
                         test=schema.test,
+                        features=schema.features, 
                         target=schema.target,
                     )
                 )

@@ -12,4 +12,9 @@ raw:
     negative_example_2: str
     rule_violation: int64
   
+  features:
+    - rule
+    - subreddit
+    - body
+
   target: rule_violation

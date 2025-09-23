@@ -19,6 +19,7 @@ class DataSchema(BaseModel):
     schema: dict[str, str]
     train: list[FilePath]
     test: list[FilePath]
+    features: list[str]
     target: str
 
 
