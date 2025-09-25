@@ -3,7 +3,7 @@ from src.jigsaw import logger
 from src.jigsaw.entity.common import FilePath
 from pathlib import Path
 from src.jigsaw.entity.config_entity import DataValidationConfig, DataSchema
-from src.jigsaw.utils.common import read_csv, save_json
+from src.jigsaw.utils.common import read_csv, save_json, print_format
 from collections import defaultdict
 from pandas.api.types import is_object_dtype, is_integer_dtype
 
@@ -19,26 +19,13 @@ class DataValidationComponent:
         length = 50
         print("=" * length)
         string = "Datasets Available"
-        space = length - len(string) - 2
-        print(
-            "|{}{}{}|".format(
-                " " * (space // 2),
-                string,
-                " " * (space // 2),
-            )
-        )
+        print_format(string, length)
 
         print("=" * length)
         for name in self.names:
-            space = length - len(name) - 1
-            print(
-                "|{}{}{}|".format(
-                    " " * (space // 2),
-                    name,
-                    " " * (space // 2),
-                )
-            )
+            print_format(name, length)
         print("=" * length)
+        
 
     def validate_all(self):
         for schema in self.config.schemas:
@@ -78,7 +65,7 @@ class DataValidationComponent:
             else:
                 validation_status &= True
 
-        self.status[f"{schema.name}.{data_path.name}"]["missing_values"] = not validation_status
+        self.status[f"{schema.name}"][f"{data_path.name}"]["missing_values"] = not validation_status
         if validation_status:
             logger.info(f"[SUCCESS] Check Missing Columns: {schema.name}.{data_path.name}")
         else:
@@ -105,7 +92,7 @@ class DataValidationComponent:
                 else:
                     validation_status &= True
 
-        self.status[f"{schema.name}.{data_path.name}"]['mismatch_dtype'] = not validation_status
+        self.status[f"{schema.name}"][f"{data_path.name}"]['mismatch_dtype'] = not validation_status
 
         if validation_status:
             logger.info(f"[SUCCESS] Check Mismatch Datatype: {schema.name}.{data_path.name}")
@@ -115,7 +102,7 @@ class DataValidationComponent:
     def find_data_redundancy(self, data_path: FilePath, features: list[str]):
         validation_status = False
         try:
-            file_name = ".".join(str(data_path).split("/")[-2:])
+            file_name = "::".join(str(data_path).split("/")[-2:])
             data = read_csv(data_path)
             nrow = data.shape[0]
             data = data.drop_duplicates(subset = features, ignore_index = True)
@@ -129,7 +116,7 @@ class DataValidationComponent:
 
         except Exception as e:
             logger.error(f"Checking Data Redundancy [FAILED]: {e}")
-        self.status[file_name]['data_redundancy'] = not validation_status
+        self.status[file_name.split("::")[0]][file_name.split("::")[1]]['data_redundancy'] = not validation_status
 
     def get_statistics(self, path: FilePath):
         pass

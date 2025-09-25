@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "clean-text>=0.6.0",
     "ensure>=1.0.4",
     "flask>=3.1.2",
     "flask-cors>=6.0.1",
@@ -21,4 +22,5 @@ dependencies = [
     "scikit-learn>=1.7.2",
     "tqdm>=4.67.1",
     "types-pyyaml>=6.0.12.20250915",
+    "unidecode>=1.4.0",
 ]
