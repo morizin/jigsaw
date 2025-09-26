@@ -1,7 +1,9 @@
 import logging
 import dotenv
 import os, sys
+import warnings
 dotenv.load_dotenv()
+warnings.filterwarnings('ignore')
 
 logging_str : str = "%(asctime)s [%(levelname)s] : %(module)s : %(message)s"
 log_dir = 'logs'
