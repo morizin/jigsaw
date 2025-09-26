@@ -9,6 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from src.jigsaw import logger
 from pathlib import Path
 
+
 def split_dataset(
     config: DataTransformationConfig,
     data: DataFrame,
@@ -16,9 +17,9 @@ def split_dataset(
     name: str,
     outdir: Path | str | None = None,
 ) -> DataFrame:
-    
-    dataname, filename = path 
-    if filename == "sample_submission.csv": return data 
+    dataname, filename = path
+    if filename == "sample_submission.csv":
+        return data
     split_config = config.splitter
 
     data["fold"] = -1
@@ -34,10 +35,10 @@ def split_dataset(
 
     if isinstance(labels, list):
         if len(labels) > 1:
-            split_config.type = 'mlskfold'
+            split_config.type = "mlskfold"
         else:
             labels = labels[0]
-            split_config.type = 'skfold'
+            split_config.type = "skfold"
 
     if split_config.type == "kfold":
         splitter = KFold
@@ -55,7 +56,6 @@ def split_dataset(
     )
 
     if labels:
-        print(labels, type(labels))
         le_columns = []
         if isinstance(labels, list):
             for col in labels:
@@ -64,13 +64,13 @@ def split_dataset(
                     data[f"{col}_le"] = LabelEncoder().fit_transform(data[col])
                     col = f"{col}_le"
                 le_columns.append(col)
-        
+
         elif isinstance(labels, str):
             le_columns = labels
             if not is_integer_dtype(data[labels]):
                 le_columns = f"{labels}_le"
                 data[le_columns] = LabelEncoder().fit_transform(data[labels])
-    
+
         else:
             raise Exception("Labels are neither str or list[str]")
 
@@ -80,17 +80,16 @@ def split_dataset(
 
         for fold, (_, test_index) in enumerate(splitter.split(data, data[le_columns])):
             data.loc[test_index, "fold"] = fold
-        
+
         if isinstance(le_columns, str):
             le_columns = le_columns if le_columns.endswith("_le") else None
         elif isinstance(le_columns, list):
             le_columns = [col for col in le_columns if col.endswith("_le")]
 
         if le_columns:
-            data = data.drop(le_columns, axis = 1)
-            
-    else:
+            data = data.drop(le_columns, axis=1)
 
+    else:
         logger.error(
             f"Labels are not given for {dataname}' to use {split_config.type} Folding. Using Regular KFold"
         )
