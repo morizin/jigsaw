@@ -28,3 +28,23 @@ class DataValidationConfig(BaseModel):
     indir: Directory
     statistics: bool
     schemas: list[DataSchema]
+
+
+class DataSplitParams(BaseModel):
+    type: str
+    nsplits: int = 5
+    random_state: int = 2025
+    labels: list[str] | str | None = None
+
+
+class DataTransformationConfig(BaseModel):
+    outdir: Directory
+    indir: Directory
+    datasets: list[str]
+    splitter: DataSplitParams
+    features: dict[str, list[str] | None]
+    targets: dict[str, str | list[str] | None]
+    wash: bool
+    triplet: bool
+    zero: bool
+    pairwise: bool

@@ -1,6 +1,6 @@
 import os
 from typing import TypeVar
-from src.jigsaw.utils.common import load_yaml
+from src.jigsaw.utils.common import load_yaml, load_json
 from src.jigsaw.constants import *
 from pathlib import Path
 from src.jigsaw.entity.config_entity import (
@@ -8,6 +8,8 @@ from src.jigsaw.entity.config_entity import (
     DataSource,
     DataValidationConfig,
     DataSchema,
+    DataTransformationConfig,
+    DataSplitParams,
 )
 from src.jigsaw import logger
 from src.jigsaw.entity.common import Directory
@@ -60,7 +62,7 @@ class ConfigurationManager:
                         schema=schema.columns.to_dict(),
                         train=schema.train,
                         test=schema.test,
-                        features=schema.features, 
+                        features=schema.features,
                         target=schema.target,
                     )
                 )
@@ -78,4 +80,55 @@ class ConfigurationManager:
             indir=Directory(path=input_dir),
             statistics=config.statistics,
             schemas=schemas,
+        )
+
+    def get_data_transformation_config(self) -> DataTransformationConfig:
+        split_config = self.params.splitter
+        data_transform = self.config.data_transformation
+        splitter = DataSplitParams(
+            type=split_config.type,
+            nsplits=split_config.nsplits,
+            random_state=split_config.random_state,
+        )
+        if hasattr(split_config, 'labels'):
+            splitter.labels = split_config.labels
+
+        status_file = load_json(
+            self.artifact_root.path
+            / os.path.join(self.config.data_validation.outdir, "status.json")
+        )
+
+        features = dict()
+        targets = dict()
+        names = []
+        for name, schema in self.schema.items():
+            names.append(name)
+            if name in status_file:
+                for value in status_file[name].values():
+                    if value["data_redundancy"]:
+                        try:
+                            features[name] = schema.features
+                            targets[name] = schema.target
+                        except:
+                            features[name] = None
+                            targets[name] = None
+                            
+
+        return DataTransformationConfig(
+            outdir=Directory(path=self.artifact_root.path / data_transform.outdir),
+            indir=Directory(
+                path=self.artifact_root.path / self.config.data_ingestion.outdir
+            ),
+            datasets=names,
+            splitter=splitter,
+            features=features,
+            targets = targets,
+            wash=data_transform.wash if hasattr(data_transform, "wash") else False,
+            triplet=data_transform.triplet
+            if hasattr(data_transform, "triplet")
+            else False,
+            zero=data_transform.zero if hasattr(data_transform, "zero") else False,
+            pairwise=data_transform.pairwise
+            if hasattr(data_transform, "pairwise")
+            else False,
         )

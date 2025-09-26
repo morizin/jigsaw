@@ -1,12 +1,21 @@
 artifact_root: "artifacts/"
 
-data-ingestion: 
-  outdir: "data/"
+data-ingestion:
+  outdir: &data_ingestion "data/"
   raw:
     source: kaggle
     type: competition
     name: jigsaw-agile-community-rules
 
 data-validation:
-  outdir: "data/validation"
+  outdir: "data/"
   statistics: false
+
+data-transformation:
+  outdir: "data/"
+  indir: *data_ingestion
+  splitter: splitter
+  wash: true
+  triplet: false
+  zero: true
+  pairwise: false

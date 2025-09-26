@@ -15,6 +15,11 @@ list_of_files : list[str] = [
         f'src/{project_name}/config/__init__.py',
         f'src/{project_name}/config/config.py',
         f'src/{project_name}/components/__init__.py',
+        f'src/{project_name}/components/dataset/__init__.py',
+        f'src/{project_name}/components/models/__init__.py',
+        f'src/{project_name}/components/data/__init__.py',
+        f'src/{project_name}/components/engines/__init__.py',
+        f'src/{project_name}/components/loss/__init__.py',
         f'src/{project_name}/constants/__init__.py',
         f'src/{project_name}/entity/__init__.py',
         f'src/{project_name}/entity/common.py',
@@ -43,4 +48,5 @@ for filepath in list_of_files:
     else:
         logging.info(f"{filepath} already exists")
 
+subprocess.call("rm -f hello.py".split())
 

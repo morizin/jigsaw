@@ -1,1 +1,8 @@
-key: value
+SEED: &seed 1234
+
+splitter:
+  type: kfold # groupkfold, smlkf, stratifiedkfold
+  nsplits: 5
+  random_state: *seed
+  labels: 
+    - rule_violation
