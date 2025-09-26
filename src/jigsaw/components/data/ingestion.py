@@ -5,7 +5,7 @@ from src.jigsaw.entity.common import Directory
 import kagglehub
 import subprocess
 import os
-from .. import logger
+from ... import logger
 
 class DataIngestionComponent:
     def __init__ (self, config: DataIngestionConfig):

@@ -1,4 +1,4 @@
-from src.jigsaw.components.data_ingestion import DataIngestionComponent
+from src.jigsaw.components.data.ingestion import DataIngestionComponent
 from src.jigsaw.config.config import ConfigurationManager
 
 class DataIngestionPipeline:

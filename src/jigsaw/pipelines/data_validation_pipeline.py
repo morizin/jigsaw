@@ -1,5 +1,5 @@
 from src.jigsaw.config.config import ConfigurationManager
-from src.jigsaw.components.data_validation import DataValidationComponent
+from src.jigsaw.components.data.validation import DataValidationComponent
 
 
 class DataValidationPipeline:
