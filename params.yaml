@@ -5,4 +5,5 @@ splitter:
   nsplits: 5
   random_state: *seed
   labels: 
+    - rule
     - rule_violation
