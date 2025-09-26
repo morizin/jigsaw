@@ -976,6 +976,20 @@ wheels = [
 ]
 
 [[package]]
+name = "iterative-stratification"
+version = "0.1.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "scikit-learn" },
+    { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/89/7b/6a0a8b31a1206befbe6d8104ca45b24666ce736f90326bf35c2a2ca00324/iterative_stratification-0.1.9.tar.gz", hash = "sha256:e7e299a3b28909fd0867d50ae6fc512def3bd482f71666ebaf0a3480b84cec42", size = 8400 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ba/01/d8d8d138713356ab4fecc5e69626c528e682c4ec2a596c707c2eb2d6351e/iterative_stratification-0.1.9-py3-none-any.whl", hash = "sha256:476f8deff6753fb1725612fe41e59cc2058f8f2524ae5d1ccee88eb8c8d3de80", size = 8515 },
+]
+
+[[package]]
 name = "itsdangerous"
 version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1005,6 +1019,7 @@ dependencies = [
     { name = "ensure" },
     { name = "flask" },
     { name = "flask-cors" },
+    { name = "iterative-stratification" },
     { name = "joblib" },
     { name = "kagglehub" },
     { name = "matplotlib" },
@@ -1027,6 +1042,7 @@ requires-dist = [
     { name = "ensure", specifier = ">=1.0.4" },
     { name = "flask", specifier = ">=3.1.2" },
     { name = "flask-cors", specifier = ">=6.0.1" },
+    { name = "iterative-stratification", specifier = ">=0.1.9" },
     { name = "joblib", specifier = ">=1.5.2" },
     { name = "kagglehub", specifier = ">=0.3.13" },
     { name = "matplotlib", specifier = ">=3.10.6" },

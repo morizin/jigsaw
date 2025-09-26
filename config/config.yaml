@@ -18,4 +18,4 @@ data-transformation:
   wash: true
   triplet: false
   zero: true
-  matching: false
+  pairwise: false
