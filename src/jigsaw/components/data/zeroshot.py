@@ -1,10 +1,10 @@
 from pandas.core.frame import DataFrame
-from src.jigsaw.entity.config_entity import DataTransformationConfig
-from src.jigsaw.utils.common import save_csv
-from src.jigsaw.entity.config_entity import Directory
-from src.jigsaw.components.data.cleaning import remove_duplicates
+from ...entity.config_entity import DataTransformationConfig
+from ...utils.common import save_csv
+from ...entity.config_entity import Directory
+from .cleaning import remove_duplicates
 from ensure import ensure_annotations
-from src.jigsaw import logger
+from ... import logger
 from pathlib import Path
 import pandas as pd
 

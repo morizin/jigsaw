@@ -1,12 +1,12 @@
 from pandas.core.frame import DataFrame
-from src.jigsaw.entity.config_entity import DataTransformationConfig
+from ...entity.config_entity import DataTransformationConfig
 from sklearn.model_selection import KFold, StratifiedKFold
 from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
-from src.jigsaw.utils.common import save_csv
-from src.jigsaw.entity.common import Directory
+from ...utils.common import save_csv
+from ...entity.common import Directory
 from pandas.api.types import is_integer_dtype
 from sklearn.preprocessing import LabelEncoder
-from src.jigsaw import logger
+from ... import logger
 from pathlib import Path
 
 
