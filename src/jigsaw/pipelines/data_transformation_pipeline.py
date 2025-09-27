@@ -1,5 +1,5 @@
-from src.jigsaw.config.config import ConfigurationManager
-from src.jigsaw.components.data.transformation import DataTransformationComponent
+from ..config.config import ConfigurationManager
+from ..components.data.transformation import DataTransformationComponent
 
 class DataTransformationPipeline:
     def __init__(self):

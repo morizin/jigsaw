@@ -1,7 +1,7 @@
 from pathlib import Path
-from src.jigsaw.utils.common import load_yaml
-from src.jigsaw.entity.config_entity import DataIngestionConfig
-from src.jigsaw.entity.common import Directory
+from ...utils.common import load_yaml
+from ...entity.config_entity import DataIngestionConfig
+from ...entity.common import Directory
 import kagglehub
 import subprocess
 import os

@@ -1,7 +1,7 @@
-from src.jigsaw.entity.config_entity import DataTransformationConfig
-from src.jigsaw import logger
-from src.jigsaw.entity.common import Directory
-from src.jigsaw.utils.common import save_csv
+from ...entity.config_entity import DataTransformationConfig
+from ... import logger
+from ...entity.common import Directory
+from ...utils.common import save_csv
 from pandas.core.frame import DataFrame
 from pandas.api.types import is_string_dtype
 from pathlib import Path
@@ -37,12 +37,6 @@ def remove_duplicates(
         target_dir = Directory(path=Path(outdir) / name)
         save_csv(data, target_dir.path / filename)
     return data
-
-from pandas.core.frame import DataFrame
-from src.jigsaw.entity.common import Directory
-from src.jigsaw.utils.common import save_csv
-from src.jigsaw import logger
-from pandas.api.types import is_string_dtype
 
 @ensure_annotations
 def clean_text(

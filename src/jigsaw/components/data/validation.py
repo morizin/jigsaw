@@ -1,9 +1,9 @@
 from pydantic import validate_call
-from src.jigsaw import logger
-from src.jigsaw.entity.common import FilePath
+from ... import logger
+from ...entity.common import FilePath
 from pathlib import Path
-from src.jigsaw.entity.config_entity import DataValidationConfig, DataSchema
-from src.jigsaw.utils.common import read_csv, save_json, print_format
+from ...entity.config_entity import DataValidationConfig, DataSchema
+from ...utils.common import read_csv, save_json, print_format
 from collections import defaultdict
 from pandas.api.types import is_object_dtype, is_integer_dtype
 

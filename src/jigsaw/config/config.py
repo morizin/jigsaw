@@ -1,9 +1,9 @@
 import os
 from typing import TypeVar
-from src.jigsaw.utils.common import load_yaml, load_json
-from src.jigsaw.constants import *
+from ..utils.common import load_yaml, load_json
+from ..constants import *
 from pathlib import Path
-from src.jigsaw.entity.config_entity import (
+from ..entity.config_entity import (
     DataIngestionConfig,
     DataSource,
     DataValidationConfig,
@@ -11,8 +11,8 @@ from src.jigsaw.entity.config_entity import (
     DataTransformationConfig,
     DataSplitParams,
 )
-from src.jigsaw import logger
-from src.jigsaw.entity.common import Directory
+from .. import logger
+from ..entity.common import Directory
 from box import ConfigBox
 
 FilePath = TypeVar("FilePath", str, Path)

@@ -1,17 +1,17 @@
 from pydantic import validate_call
 import pandas as pd
-from src.jigsaw import logger
-from src.jigsaw.entity.common import Directory
-from src.jigsaw.entity.config_entity import DataTransformationConfig, DataSplitParams
+from ... import logger
+from ...entity.common import Directory
+from ...entity.config_entity import DataTransformationConfig, DataSplitParams
 
-from src.jigsaw.components.data.cleaning import remove_duplicates, clean_text
-from src.jigsaw.components.data.zeroshot import zero_shot_transform
-from src.jigsaw.components.data.folding import split_dataset
+from .cleaning import remove_duplicates, clean_text
+from .zeroshot import zero_shot_transform
+from .folding import split_dataset
 from pathlib import Path
 from ensure import ensure_annotations
 from cleantext import clean
 from pandas.api.types import is_string_dtype
-from src.jigsaw.utils.common import read_csv, save_csv, print_format
+from ...utils.common import read_csv, save_csv, print_format
 
 class DataTransformationComponent:
     def __init__(self, config: DataTransformationConfig):
