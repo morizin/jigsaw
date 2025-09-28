@@ -105,6 +105,10 @@ def split_dataset(
             shuffle=hasattr(split_config, "random_state"),
             random_state=split_config.random_state,
         )
+        logger.info(
+            f"Folding '{dataname}.{filename}' into {split_config.nsplits} using kfold" 
+        )
+        
 
         for fold, (_, test_index) in enumerate(splitter.split(data)):
             data.loc[test_index, "fold"] = fold
