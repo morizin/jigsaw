@@ -36,6 +36,10 @@ class DataSplitParams(BaseModel):
     random_state: int = 2025
     labels: list[str] | str | None = None
 
+class TripletDataConfig(BaseModel):
+    ntriplets : int
+    nsamples  : int
+    random_state : int
 
 class DataTransformationConfig(BaseModel):
     outdir: Directory
@@ -45,6 +49,6 @@ class DataTransformationConfig(BaseModel):
     features: dict[str, list[str] | None]
     targets: dict[str, str | list[str] | None]
     wash: bool
-    triplet: bool
     zero: bool
+    triplet: TripletDataConfig | None 
     pairwise: bool

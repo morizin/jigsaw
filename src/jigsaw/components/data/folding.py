@@ -55,44 +55,50 @@ def split_dataset(
         random_state=split_config.random_state,
     )
 
-    if labels:
-        le_columns = []
-        if isinstance(labels, list):
-            for col in labels:
-                if not is_integer_dtype(data[col]):
-                    logger.info(f"Label Encoding the dataset column '{col}'")
-                    data[f"{col}_le"] = LabelEncoder().fit_transform(data[col])
-                    col = f"{col}_le"
-                le_columns.append(col)
+    try:
+        if labels:
+            le_columns = []
+            if isinstance(labels, list):
+                for col in labels:
+                    if not is_integer_dtype(data[col]):
+                        logger.info(f"Label Encoding the dataset column '{col}'")
+                        data[f"{col}_le"] = LabelEncoder().fit_transform(data[col])
+                        col = f"{col}_le"
+                    le_columns.append(col)
 
-        elif isinstance(labels, str):
-            le_columns = labels
-            if not is_integer_dtype(data[labels]):
-                le_columns = f"{labels}_le"
-                data[le_columns] = LabelEncoder().fit_transform(data[labels])
+            elif isinstance(labels, str):
+                le_columns = labels
+                if not is_integer_dtype(data[labels]):
+                    le_columns = f"{labels}_le"
+                    data[le_columns] = LabelEncoder().fit_transform(data[labels])
 
-        else:
-            raise Exception("Labels are neither str or list[str]")
+            else:
+                raise Exception("Labels are neither str or list[str]")
 
-        logger.info(
-            f"Folding '{dataname}.{filename}' into {split_config.nsplits} using {split_config.type} on column(s) {le_columns}"
-        )
+            logger.info(
+                f"Folding '{dataname}.{filename}' into {split_config.nsplits} using {split_config.type} on column(s) {le_columns}"
+            )
 
-        for fold, (_, test_index) in enumerate(splitter.split(data, data[le_columns])):
-            data.loc[test_index, "fold"] = fold
+            for fold, (_, test_index) in enumerate(splitter.split(data, data[le_columns])):
+                data.loc[test_index, "fold"] = fold
 
-        if isinstance(le_columns, str):
-            le_columns = le_columns if le_columns.endswith("_le") else None
-        elif isinstance(le_columns, list):
-            le_columns = [col for col in le_columns if col.endswith("_le")]
+            if isinstance(le_columns, str):
+                le_columns = le_columns if le_columns.endswith("_le") else None
+            elif isinstance(le_columns, list):
+                le_columns = [col for col in le_columns if col.endswith("_le")]
 
-        if le_columns:
-            data = data.drop(le_columns, axis=1)
+            if le_columns:
+                data = data.drop(le_columns, axis=1)
 
-    else:
+    except Exception as e:
         logger.error(
-            f"Labels are not given for {dataname}' to use {split_config.type} Folding. Using Regular KFold"
+            f"Labels are not given for '{dataname}.{filename}' to use {split_config.type} Folding {e}. \nUsing Regular KFold"
         )
+        if le_columns:
+            if isinstance(le_columns, list):
+                data = data.drop([col for col in le_columns if col.endswith('_le')], axis = 1)
+            elif le_columns.endswith("_le"):
+                data = data.drop(le_columns, axis = 1)
 
         splitter = KFold(
             split_config.nsplits,

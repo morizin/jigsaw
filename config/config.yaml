@@ -16,6 +16,9 @@ data-transformation:
   indir: *data_ingestion
   splitter: splitter
   wash: true
-  triplet: false
   zero: true
+  triplet:
+    ntriplets: 1
+    nsamples: 5
+    
   pairwise: false

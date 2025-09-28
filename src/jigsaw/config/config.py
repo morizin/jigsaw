@@ -8,6 +8,7 @@ from ..entity.config_entity import (
     DataSource,
     DataValidationConfig,
     DataSchema,
+    TripletDataConfig,
     DataTransformationConfig,
     DataSplitParams,
 )
@@ -90,6 +91,16 @@ class ConfigurationManager:
             nsplits=split_config.nsplits,
             random_state=split_config.random_state,
         )
+
+        if hasattr(data_transform, 'triplet'):
+            triplet_config = TripletDataConfig(
+                    ntriplets = data_transform.triplet.ntriplets,
+                    nsamples = data_transform.triplet.nsamples,
+                    random_state = self.params.SEED
+            )
+        else:
+            triplet_config = None
+
         if hasattr(split_config, 'labels'):
             splitter.labels = split_config.labels
 
@@ -124,9 +135,7 @@ class ConfigurationManager:
             features=features,
             targets = targets,
             wash=data_transform.wash if hasattr(data_transform, "wash") else False,
-            triplet=data_transform.triplet
-            if hasattr(data_transform, "triplet")
-            else False,
+            triplet=triplet_config,
             zero=data_transform.zero if hasattr(data_transform, "zero") else False,
             pairwise=data_transform.pairwise
             if hasattr(data_transform, "pairwise")

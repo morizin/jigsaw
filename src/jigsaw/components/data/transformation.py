@@ -7,6 +7,7 @@ from ...entity.config_entity import DataTransformationConfig, DataSplitParams
 from .cleaning import remove_duplicates, clean_text
 from .zeroshot import zero_shot_transform
 from .folding import split_dataset
+from .triplet import triplet_dataset
 from pathlib import Path
 from ensure import ensure_annotations
 from cleantext import clean
@@ -54,17 +55,17 @@ class DataTransformationComponent:
                 print_format(self.indir / f"{final_dir}{name}/", length)
             print("=" * length)
 
-        if self.config.triplet:
-            for name in self.names:
-                final_dir = "triplet_" + final_dir
-                self.pipeline.append((final_dir, list))
-                print_format(self.indir / f"{final_dir}{name}/", length)
-            print("=" * length)
-
         if self.config.zero:
             for name in self.names:
                 final_dir = "zero_" + final_dir
                 self.pipeline.append((final_dir, zero_shot_transform))
+                print_format(self.indir / f"{final_dir}{name}/", length)
+            print("=" * length)
+
+        if self.config.triplet:
+            for name in self.names:
+                final_dir = "triplet_" + final_dir
+                self.pipeline.append((final_dir, triplet_dataset))
                 print_format(self.indir / f"{final_dir}{name}/", length)
             print("=" * length)
 
