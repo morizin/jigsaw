@@ -23,3 +23,13 @@ data-transformation:
   #   nsamples: 5
     
   pairwise: false
+
+model-training:
+  outdir: "models/"
+  datasets: null
+  fold: -1
+  engine: "classifier"
+  tokenizer:
+    max-length: 2048
+    truncation: true
+    padding: 'longest'

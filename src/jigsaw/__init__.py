@@ -4,6 +4,7 @@ import os, sys
 import warnings
 dotenv.load_dotenv()
 warnings.filterwarnings('ignore')
+os.environ['TOKENIZERS_PARALLELISM'] = 'true'
 
 logging_str : str = "%(asctime)s [%(levelname)s] : %(module)s : %(message)s"
 log_dir = 'logs'
