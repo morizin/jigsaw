@@ -15,10 +15,11 @@ data-transformation:
   outdir: "data/"
   indir: *data_ingestion
   splitter: splitter
-  wash: true
-  zero: true
-  triplet:
-    ntriplets: 1
-    nsamples: 5
+  urlparse: true
+  wash: false
+  zero: false
+  triplet: false
+  #   ntriplets: 1
+  #   nsamples: 5
     
   pairwise: false

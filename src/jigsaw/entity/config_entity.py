@@ -48,7 +48,9 @@ class DataTransformationConfig(BaseModel):
     splitter: DataSplitParams
     features: dict[str, list[str] | None]
     targets: dict[str, str | list[str] | None]
+    urlparse : bool
     wash: bool
     zero: bool
     triplet: TripletDataConfig | None 
     pairwise: bool
+    final_dir: str | None = None

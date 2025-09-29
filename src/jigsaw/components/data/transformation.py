@@ -4,17 +4,18 @@ from ... import logger
 from ...entity.common import Directory
 from ...entity.config_entity import DataTransformationConfig, DataSplitParams
 
-from .cleaning import remove_duplicates, clean_text
+from .cleaning import remove_duplicates, clean_text, urlparse
 from .zeroshot import zero_shot_transform
 from .folding import split_dataset
 from .triplet import triplet_dataset
 from pathlib import Path
-from ensure import ensure_annotations
 from cleantext import clean
 from pandas.api.types import is_string_dtype
 from ...utils.common import read_csv, save_csv, print_format
+from typeguard import typechecked
 
 class DataTransformationComponent:
+    @typechecked
     def __init__(self, config: DataTransformationConfig):
         self.config = config
 
@@ -45,6 +46,13 @@ class DataTransformationComponent:
             for name in self.names:
                 final_dir = "cleaned_" + final_dir
                 self.pipeline.append((final_dir, remove_duplicates))
+                print_format(self.indir / f"{final_dir}{name}/", length)
+            print("=" * length)
+
+        if self.config.urlparse:
+            for name in self.names:
+                final_dir = "parse_" + final_dir
+                self.pipeline.append((final_dir, urlparse))
                 print_format(self.indir / f"{final_dir}{name}/", length)
             print("=" * length)
 
@@ -83,11 +91,12 @@ class DataTransformationComponent:
 
             print("=" * length)
 
-        self.final_dir = final_dir
+        self.config.final_dir = final_dir
 
     @validate_call
     def __call__(self):
         for name in self.names:
+            target_dir = Directory(path = self.outdir / (self.config.final_dir + name)) 
             for path in (self.indir / name).iterdir():
                 data = read_csv(path)
                 path = str(path).split("/")[-2:]
@@ -97,5 +106,5 @@ class DataTransformationComponent:
                         data = data,
                         path = path,
                         name = dirname + name,
-                        outdir = self.outdir
                     )
+                save_csv(data, target_dir.path / path[-1])
