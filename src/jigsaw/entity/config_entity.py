@@ -54,3 +54,25 @@ class DataTransformationConfig(BaseModel):
     triplet: TripletDataConfig | None 
     pairwise: bool
     final_dir: str | None = None
+
+class TokenizerParams(BaseModel):
+    max_length : int
+    truncation : bool | str
+    padding : str | bool
+
+class EngineParams(BaseModel):
+    model_name : str
+    nepochs : int
+    learning_rate : float
+    batch_size : int
+    gradient_accumulation_step : int
+    weight_decay : float | None
+    warmup_ratio : float | None
+    tokenizer : TokenizerParams
+
+class ModelTrainingConfig(BaseModel):
+    outdir : Directory
+    datasets: list[str] | str
+    fold : int
+    engine : EngineParams
+

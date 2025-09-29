@@ -11,6 +11,9 @@ from ..entity.config_entity import (
         TripletDataConfig,
         DataTransformationConfig,
         DataSplitParams,
+        EngineParams,
+        TokenizerParams,
+        ModelTrainingConfig
         )
 from .. import logger
 from ..entity.common import Directory
@@ -143,13 +146,31 @@ class ConfigurationManager:
                 else False,
                 )
 
-#    def get_model_training_config(self) -> ModelTrainingConfig:
-#        
-#        config = self.config.model_training
-#        try: 
-#            config.train_config = self.params[config.train_config]
-#        except Exception as e:
-#            logger.error(f"TrainingArguments '{config.train_config}' not found: {e}")
-#            raise e
-# 
-        
+   def get_model_training_config(self) -> ModelTrainingConfig:
+
+       config = self.config.model_training
+       try: 
+           engine_config = self.params[config.engine]
+       except Exception as e:
+           logger.error(f"TrainingArguments '{config.train_config}' not found: {e}")
+           raise e
+
+       engine_params = EngineParams(
+               model_name = engine_config.model_name,
+               nepochs = engine_config.nepochs,
+               learning_rate = engine_config.learning_rate,
+               gradient_accumulation_step = engine_config.get('gradient_accumulation_step', 1),
+               weight_decay = engine_config.get("weight_decay", None)
+               warmup_ratio = engine_config.get("warmup_ratio", None)
+               tokenizer = TokenizerParams(
+                   max_length = engine_config.tokenizer.max_length,
+                   truncation = engine_config.tokenizer.truncation,
+                   padding = engine_config.tokenizer.padding
+                   )
+               )
+       return ModelTrainingConfig(
+               outdir = Directory(path = config.outdir),
+               datasets = [],
+               fold = config.get('fold', -1),
+               engine = engine_params
+               )
