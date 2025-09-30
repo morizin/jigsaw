@@ -59,15 +59,17 @@ class EngineParams(BaseModel):
     model_name : str
     nepochs : int
     learning_rate : float
-    batch_size : int
-    gradient_accumulation_step : int
+    train_batch_size : int
+    valid_batch_size : None | int = None
+    gradient_accumulation_steps : int
     weight_decay : float | None
     warmup_ratio : float | None
     tokenizer : TokenizerParams
 
 class ModelTrainingConfig(BaseModel):
     outdir : Directory
-    datasets: list[str] | str
+    indir  : Directory
+    schemas: list[DataSchema]
     fold : int
     engine : EngineParams
 

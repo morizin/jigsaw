@@ -5,9 +5,7 @@ from ...entity.config_entity import ModelConfig
 class ClassifierModel(nn.Module):
     
     def __init__(self, config: ModelConfig):
-        self.backbone = AutoModelForSequenceClassification.from_pretrained(config.model_name, trust_remote_code = True)
-        self.backbone.classifier = nn.Linear(self.config.classifier.in_features, 1)
-        del self.backbone.dropout
+        self.backbone = AutoModelForSequenceClassification.from_pretrained(config.model_name, trust_remote_code = True, num_labels = 1)
 
     def forward(self, inputs):
         return self.backbone(**inputs)

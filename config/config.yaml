@@ -26,6 +26,7 @@ data-transformation:
 
 model-training:
   outdir: "models/"
-  datasets: null
+  indir: *data_ingestion
   fold: -1
   engine: "classifier"
+  few-shot: true 

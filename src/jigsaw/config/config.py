@@ -42,34 +42,45 @@ class ConfigurationManager:
         for name, config in self.config.data_ingestion.items():
             if isinstance(config, ConfigBox):
                 sources.append(
-                        DataSource(source=config.source, name=config.name, type=config.type)
-                        )
+                    DataSource(source=config.source, name=config.name, type=config.type)
+                )
                 names.append(name)
 
         return DataIngestionConfig(
-                sources=sources,
-                names=names,
-                outdir=Directory(path=self.artifact_root.path / data_ingestion.outdir),
-                )
+            sources=sources,
+            names=names,
+            outdir=Directory(path=self.artifact_root.path / data_ingestion.outdir),
+        )
 
+    @typechecked
+    def get_data_schema(self, name: str) -> DataSchema:
+        if hasattr(self.schema, name):
+            schema = self.schema[name]
+            return DataSchema(
+                name=name,
+                schema=schema.columns.to_dict(),
+                train=schema.train,
+                test=schema.test,
+                features=schema.features,
+                target=schema.target,
+            )
+        else:
+            e = f"Schema of dataset '{name}' not found"
+            logger.error(e)
+            raise Exception(e)
+
+    @typechecked
     def get_data_validation_config(self):
         config = self.config.data_validation
         schemas = []
-
-        for name, schema in self.schema.items():
+        self.names = self.config.data_ingestion
+        for name in self.names:
+            if name == "outdir":
+                continue
             if name in os.listdir(
-                    self.artifact_root.path / self.config.data_ingestion.outdir
-                    ):
-                schemas.append(
-                        DataSchema(
-                            name=name,
-                            schema=schema.columns.to_dict(),
-                            train=schema.train,
-                            test=schema.test,
-                            features=schema.features,
-                            target=schema.target,
-                            )
-                        )
+                self.artifact_root.path / self.config.data_ingestion.outdir
+            ):
+                schemas.append(self.get_data_schema(name))
             else:
                 logger.error(f'Data "{name}" doesn\'t exists)')
 
@@ -138,50 +149,106 @@ class ConfigurationManager:
                             features[name] = None
                             targets[name] = None
 
+        if not hasattr(data_transform, "urlparse"):
+            data_transform.urlparse = False
+
+        if not hasattr(data_transform, "wash"):
+            data_transform.wash = False
+
+        if not hasattr(data_transform, "zero"):
+            data_transform.zero = False
+
+        if not hasattr(data_transform, "pairwise"):
+            data_transform.pairwise = False
+
+        final_dir = ""
+        if len(features):
+            final_dir = "cleaned_" + final_dir
+
+        if data_transform.urlparse:
+            final_dir = "parse_" + final_dir
+
+        if data_transform.wash:
+            final_dir = "washed_" + final_dir
+
+        if data_transform.zero:
+            final_dir = "zero_" + final_dir
+
+        if triplet_config:
+            final_dir = "triplet_" + final_dir
+
+        if data_transform.pairwise:
+            final_dir = "pairwise_" + final_dir
+
+        if splitter:
+            final_dir = "folded_" + final_dir
+
+        self.final_dir = final_dir
+        self.names = names
 
         return DataTransformationConfig(
-                outdir=Directory(path=self.artifact_root.path / data_transform.outdir),
-                indir=Directory(
-                    path=self.artifact_root.path / self.config.data_ingestion.outdir
-                    ),
-                datasets=names,
-                splitter=splitter,
-                features=features,
-                targets = targets,
-                urlparse=data_transform.urlparse if hasattr(data_transform, "urlparse") else False,
-                wash=data_transform.wash if hasattr(data_transform, "wash") else False,
-                triplet=triplet_config,
-                zero=data_transform.zero if hasattr(data_transform, "zero") else False,
-                pairwise=data_transform.pairwise
-                if hasattr(data_transform, "pairwise")
-                else False,
-                )
+            outdir=Directory(path=self.artifact_root.path / data_transform.outdir),
+            indir=Directory(
+                path=self.artifact_root.path / self.config.data_ingestion.outdir
+            ),
+            datasets=names,
+            splitter=splitter,
+            features=features,
+            targets=targets,
+            urlparse=data_transform.urlparse,
+            wash=data_transform.wash,
+            triplet=triplet_config,
+            zero=data_transform.zero,
+            pairwise=data_transform.pairwise,
+            final_dir=final_dir,
+        )
 
-   def get_model_training_config(self) -> ModelTrainingConfig:
+    @typechecked
+    def get_model_training_config(self) -> ModelTrainingConfig:
+        config = self.config.model_training
+        _ = self.get_data_transformation_config()
+        try:
+            engine_config = self.params[config.engine]
+        except Exception as e:
+            logger.error(f"TrainingArguments '{config.engine}' not found: {e}")
+            raise e
 
-       config = self.config.model_training
-       try: 
-           engine_config = self.params[config.engine]
-       except Exception as e:
-           logger.error(f"TrainingArguments '{config.train_config}' not found: {e}")
-           raise e
+        engine_params = EngineParams(
+            model_name=engine_config.model_name,
+            nepochs=engine_config.nepochs,
+            learning_rate=engine_config.learning_rate,
+            train_batch_size = engine_config.train_batch_size,
+            valid_batch_size = engine_config.get("valid_batch_size", None) ,
+            gradient_accumulation_steps=engine_config.get(
+                "gradient_accumulation_steps", 1
+            ),
+            weight_decay=engine_config.get("weight_decay", None),
+            warmup_ratio=engine_config.get("warmup_ratio", None),
+            tokenizer=TokenizerParams(
+                max_length=engine_config.tokenizer.max_length,
+                truncation=engine_config.tokenizer.truncation,
+                padding=engine_config.tokenizer.padding,
+            ),
+        )
 
-       engine_params = EngineParams(
-               model_name = engine_config.model_name,
-               nepochs = engine_config.nepochs,
-               learning_rate = engine_config.learning_rate,
-               gradient_accumulation_step = engine_config.get('gradient_accumulation_step', 1),
-               weight_decay = engine_config.get("weight_decay", None)
-               warmup_ratio = engine_config.get("warmup_ratio", None)
-               tokenizer = TokenizerParams(
-                   max_length = engine_config.tokenizer.max_length,
-                   truncation = engine_config.tokenizer.truncation,
-                   padding = engine_config.tokenizer.padding
-                   )
-               )
-       return ModelTrainingConfig(
-               outdir = Directory(path = config.outdir),
-               datasets = [],
-               fold = config.get('fold', -1),
-               engine = engine_params
-               )
+        schemas = []
+        for name in self.names:
+            if f"{self.final_dir}{name}" in os.listdir(
+                self.artifact_root.path / config.indir
+            ):
+                schema = self.get_data_schema(name)
+                schema.name = f"{self.final_dir}{name}"
+                if config.few_shot:
+                    schema.features = list(schema.schema)
+                del schema.schema
+                schemas.append(schema)
+            else:
+                logger.error(f'Data "{name}" doesn\'t exists)')
+
+        return ModelTrainingConfig(
+            outdir=Directory(path=config.outdir),
+            indir = Directory(path = config.indir),
+            fold=config.get("fold", -1),
+            engine=engine_params,
+            schemas=schemas,
+        )
