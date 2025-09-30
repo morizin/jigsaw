@@ -2,12 +2,14 @@ from pathlib import Path
 from ...utils.common import load_yaml
 from ...entity.config_entity import DataIngestionConfig
 from ...entity.common import Directory
+from typeguard import typechecked
 import kagglehub
 import subprocess
 import os
 from ... import logger
 
 class DataIngestionComponent:
+    @typechecked
     def __init__ (self, config: DataIngestionConfig):
         self.config = config
         print("==============================")

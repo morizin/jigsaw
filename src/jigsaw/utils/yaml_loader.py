@@ -1,6 +1,5 @@
 import yaml
 import os
-from ensure import ensure_annotations
 
 class YAMLoader(yaml.SafeLoader):
 

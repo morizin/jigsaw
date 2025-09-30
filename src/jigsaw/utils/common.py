@@ -1,4 +1,3 @@
-from pydantic import validate_call
 from .. import logger
 from ..entity.common import ZipFile, Directory, FilePath
 from .yaml_loader import YAMLoader
@@ -8,17 +7,29 @@ from box import ConfigBox
 import pandas as pd
 from typing import Any
 from collections import defaultdict
-from ensure import ensure_annotations
+from typeguard import typechecked
+import torch
+import numpy as np
+import random
 
+@typechecked
+def seed_everything(seed : int) :
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.backends.cudnn.deterministic = True
 
-@validate_call
+@typechecked
 def unzip_file(filepath: ZipFile, outdir: Directory):
     logger.info(f"Extracting {filepath.path} to {outdir.path}")
     with zipfile.ZipFile(filepath.path, "r") as file:
         file.extractall(path=outdir.path)
 
 
-@validate_call
+@typechecked
 def load_yaml(filepath: FilePath) -> ConfigBox:
     if isinstance(filepath, Path):
         filepath = filepath.as_posix()
@@ -31,9 +42,8 @@ def load_yaml(filepath: FilePath) -> ConfigBox:
         logger.error(f"Error Loading YAML : {filepath} : {e}")
     return content
 
-
-@validate_call
-def read_csv(path: FilePath) -> pd.DataFrame:
+@typechecked
+def load_csv(path: FilePath) -> pd.DataFrame:
     try:
         logger.info(f"Reading {str(path)} file ...")
         data = pd.read_csv(path)
@@ -44,7 +54,7 @@ def read_csv(path: FilePath) -> pd.DataFrame:
         raise e
 
 
-@validate_call
+@typechecked
 def save_json(data: Any, path: FilePath):
     try:
         logger.info(f"jsonifying data to {str(path)} ... ")
@@ -55,8 +65,7 @@ def save_json(data: Any, path: FilePath):
         logger.error(f"Error when jsonifying {str(path)} : {e}")
         raise e
 
-
-@validate_call
+@typechecked
 def load_json(path: FilePath) -> dict:
     try:
         logger.info(f"Loading Json file : {str(path)}")
@@ -70,7 +79,7 @@ def load_json(path: FilePath) -> dict:
         raise e
 
 
-@ensure_annotations
+@typechecked
 def save_csv(data: pd.DataFrame, path: str | Path):
     try:
         logger.info(f"Saving dataframe of {data.shape} into {str(path)}. ...")
@@ -83,7 +92,7 @@ def save_csv(data: pd.DataFrame, path: str | Path):
         raise e
 
 
-@validate_call
+@typechecked
 def load_pickle(path: FilePath) -> Any:
     try:
         logger.info(f"Loading binary file : {str(path)}")
@@ -95,7 +104,7 @@ def load_pickle(path: FilePath) -> Any:
         raise e
 
 
-@validate_call
+@typechecked
 def print_format(string: FilePath, length: int):
     space = length - len(str(string)) - 1
     print(

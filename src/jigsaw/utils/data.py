@@ -1,5 +1,5 @@
 from ..constants.prompt import *
-from typegaurd import typechecked
+from typeguard import typechecked
 
 @typechecked
 def build_prompt(row):

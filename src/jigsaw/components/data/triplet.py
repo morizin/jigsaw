@@ -1,22 +1,22 @@
 from ...entity.config_entity import DataTransformationConfig
-from ...entity.common import Directory
+from ...entity.common import FilePath, Directory
 from ...utils.common import save_csv
 from .cleaning import remove_duplicates
 from pandas.core.frame import DataFrame
-from ensure import ensure_annotations
 from tqdm.autonotebook import tqdm
+from typeguard import typechecked
 from ... import logger
 import pandas as pd
 import numpy as np
 from pathlib import Path
 import random
 
-@ensure_annotations
+@typechecked
 def triplet_dataset(config: DataTransformationConfig,
                     data: DataFrame, 
-                    path : list,
+                    path : list[str],
                     name : str,
-                    outdir: str | Path | None = None) -> DataFrame:
+                    outdir: FilePath | None = None) -> DataFrame:
 
     dataname, filename = path
     triplet_config = config.triplet

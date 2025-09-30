@@ -3,12 +3,12 @@ from ...entity.config_entity import DataTransformationConfig
 from ...utils.common import save_csv
 from ...entity.config_entity import Directory
 from .cleaning import remove_duplicates
-from ensure import ensure_annotations
+from typeguard import typechecked
 from ... import logger
 from pathlib import Path
 import pandas as pd
 
-@ensure_annotations
+@typechecked
 def zero_shot_transform(
     config: DataTransformationConfig,
     data: DataFrame,
