@@ -1,6 +1,6 @@
 import os
 from typing import TypeVar
-from ..utils.common import load_yaml, load_json
+from ..utils.common import seed_everything, load_yaml, load_json
 from ..constants import *
 from pathlib import Path
 from ..entity.config_entity import (
@@ -21,7 +21,6 @@ from box import ConfigBox
 from typeguard import typechecked
 
 class ConfigurationManager:
-
     @typechecked
     def __init__(
         self,
@@ -32,6 +31,7 @@ class ConfigurationManager:
         self.config = load_yaml(config_path)
         self.params = load_yaml(params_path)
         self.schema = load_yaml(schema_path)
+        seed_everything(self.params.SEED)
         self.artifact_root = Directory(path=self.config.artifact_root)
 
     def get_data_ingestion_config(self) -> DataIngestionConfig:
@@ -217,13 +217,13 @@ class ConfigurationManager:
             model_name=engine_config.model_name,
             nepochs=engine_config.nepochs,
             learning_rate=engine_config.learning_rate,
-            train_batch_size = engine_config.train_batch_size,
-            valid_batch_size = engine_config.get("valid_batch_size", None) ,
+            train_batch_size=engine_config.train_batch_size,
+            valid_batch_size=engine_config.get("valid_batch_size", None),
             gradient_accumulation_steps=engine_config.get(
-                "gradient_accumulation_steps", 1
+                "gradient-accumulation-steps", 1
             ),
-            weight_decay=engine_config.get("weight_decay", None),
-            warmup_ratio=engine_config.get("warmup_ratio", None),
+            weight_decay=engine_config.get("weight-decay", None),
+            warmup_ratio=engine_config.get("warmup-ratio", None),
             tokenizer=TokenizerParams(
                 max_length=engine_config.tokenizer.max_length,
                 truncation=engine_config.tokenizer.truncation,
@@ -246,8 +246,8 @@ class ConfigurationManager:
                 logger.error(f'Data "{name}" doesn\'t exists)')
 
         return ModelTrainingConfig(
-            outdir=Directory(path=config.outdir),
-            indir = Directory(path = config.indir),
+            outdir=Directory(path=self.artifact_root.path / config.outdir),
+            indir=Directory(path=self.artifact_root.path / config.indir),
             fold=config.get("fold", -1),
             engine=engine_params,
             schemas=schemas,

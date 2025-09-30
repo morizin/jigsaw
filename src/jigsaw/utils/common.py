@@ -8,6 +8,19 @@ import pandas as pd
 from typing import Any
 from collections import defaultdict
 from typeguard import typechecked
+import torch
+import numpy as np
+import random
+
+@typechecked
+def seed_everything(seed : int) :
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.backends.cudnn.deterministic = True
 
 @typechecked
 def unzip_file(filepath: ZipFile, outdir: Directory):
@@ -51,7 +64,6 @@ def save_json(data: Any, path: FilePath):
     except Exception as e:
         logger.error(f"Error when jsonifying {str(path)} : {e}")
         raise e
-
 
 @typechecked
 def load_json(path: FilePath) -> dict:
