@@ -1,18 +1,15 @@
 from pydantic import BaseModel
 from .common import Directory, FilePath
 
-
 class DataSource(BaseModel):
     source: str
     type: str
     name: str
 
-
 class DataIngestionConfig(BaseModel):
     sources: list[DataSource]
     names: list[str]
     outdir: Directory
-
 
 class DataSchema(BaseModel):
     name: str
@@ -22,13 +19,11 @@ class DataSchema(BaseModel):
     features: list[str]
     target: str
 
-
 class DataValidationConfig(BaseModel):
     outdir: Directory
     indir: Directory
     statistics: bool
     schemas: list[DataSchema]
-
 
 class DataSplitParams(BaseModel):
     type: str
@@ -45,7 +40,7 @@ class DataTransformationConfig(BaseModel):
     outdir: Directory
     indir: Directory
     datasets: list[str]
-    splitter: DataSplitParams
+    splitter: None | DataSplitParams
     features: dict[str, list[str] | None]
     targets: dict[str, str | list[str] | None]
     urlparse : bool
@@ -54,7 +49,7 @@ class DataTransformationConfig(BaseModel):
     triplet: TripletDataConfig | None 
     pairwise: bool
     final_dir: str | None = None
-
+    
 class TokenizerParams(BaseModel):
     max_length : int
     truncation : bool | str

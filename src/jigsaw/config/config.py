@@ -4,31 +4,31 @@ from ..utils.common import load_yaml, load_json
 from ..constants import *
 from pathlib import Path
 from ..entity.config_entity import (
-        DataIngestionConfig,
-        DataSource,
-        DataValidationConfig,
-        DataSchema,
-        TripletDataConfig,
-        DataTransformationConfig,
-        DataSplitParams,
-        EngineParams,
-        TokenizerParams,
-        ModelTrainingConfig
-        )
+    DataIngestionConfig,
+    DataSource,
+    DataValidationConfig,
+    DataSchema,
+    TripletDataConfig,
+    DataTransformationConfig,
+    DataSplitParams,
+    EngineParams,
+    TokenizerParams,
+    ModelTrainingConfig,
+)
 from .. import logger
-from ..entity.common import Directory
+from ..entity.common import FilePath, Directory
 from box import ConfigBox
-
-FilePath = TypeVar("FilePath", str, Path)
-
+from typeguard import typechecked
 
 class ConfigurationManager:
+
+    @typechecked
     def __init__(
-            self,
-            config_path: FilePath = CONFIG_FILE_PATH,
-            params_path: FilePath = PARAMS_FILE_PATH,
-            schema_path: FilePath = SCHEMA_FILE_PATH,
-            ):
+        self,
+        config_path: FilePath = CONFIG_FILE_PATH,
+        params_path: FilePath = PARAMS_FILE_PATH,
+        schema_path: FilePath = SCHEMA_FILE_PATH,
+    ):
         self.config = load_yaml(config_path)
         self.params = load_yaml(params_path)
         self.schema = load_yaml(schema_path)
@@ -80,37 +80,48 @@ class ConfigurationManager:
             raise Exception("Data Validation : Data hasn't ingested")
 
         return DataValidationConfig(
-                outdir=target_dir,
-                indir=Directory(path=input_dir),
-                statistics=config.statistics,
-                schemas=schemas,
-                )
+            outdir=target_dir,
+            indir=Directory(path=input_dir),
+            statistics=config.statistics,
+            schemas=schemas,
+        )
 
+    @typechecked
     def get_data_transformation_config(self) -> DataTransformationConfig:
-        split_config = self.params.splitter
         data_transform = self.config.data_transformation
-        splitter = DataSplitParams(
-                type=split_config.type,
-                nsplits=split_config.nsplits,
-                random_state=split_config.random_state,
+        if hasattr(data_transform, "splitter") and data_transform.splitter:
+            try:
+                split_config = self.params[data_transform.splitter]
+                splitter = DataSplitParams(
+                    type=split_config.type,
+                    nsplits=split_config.nsplits,
+                    random_state=split_config.random_state,
                 )
 
-        if hasattr(data_transform, 'triplet') and data_transform.triplet:
+                if hasattr(split_config, "labels"):
+                    splitter.labels = split_config.labels
+            except KeyError:
+                logger.error(f"Splitter '{data_transform.splitter} doesn't exist")
+                splitter = None
+            except Exception as e:
+                raise e
+
+        else:
+            splitter = None
+
+        if hasattr(data_transform, "triplet") and data_transform.triplet:
             triplet_config = TripletDataConfig(
-                    ntriplets = data_transform.triplet.ntriplets,
-                    nsamples = data_transform.triplet.nsamples,
-                    random_state = self.params.SEED
-                    )
+                ntriplets=data_transform.triplet.ntriplets,
+                nsamples=data_transform.triplet.nsamples,
+                random_state=self.params.SEED,
+            )
         else:
             triplet_config = None
 
-        if hasattr(split_config, 'labels'):
-            splitter.labels = split_config.labels
-
         status_file = load_json(
-                self.artifact_root.path
-                / os.path.join(self.config.data_validation.outdir, "status.json")
-                )
+            self.artifact_root.path
+            / os.path.join(self.config.data_validation.outdir, "status.json")
+        )
 
         features = dict()
         targets = dict()
