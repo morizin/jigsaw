@@ -3,9 +3,11 @@ from pandas.core.frame import DataFrame
 from transformers import AutoTokenizer
 from typing import Dict
 import torch
-from ...utils.data import build_prompt
+from ...utils.data import build_prompt, build_chat_prompt
+from ... import logger
 from ...utils.common import load_csv
 from ...entity.config_entity import ModelTrainingConfig
+
 
 class ClassifierDataset(Dataset):
     # @typechecked
@@ -29,7 +31,9 @@ class ClassifierDataset(Dataset):
 
         self.tokenizer = AutoTokenizer.from_pretrained(config.engine.model_name)
 
-        self.completion = data.apply(build_prompt, axis=1).to_list()
+        self.completion = data.apply(
+            build_prompt, axis=1, args=(self.tokenizer,)
+        ).to_list()
 
         self.encoding = self.tokenizer(
             self.completion,
