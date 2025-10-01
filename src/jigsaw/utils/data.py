@@ -3,7 +3,7 @@ from typeguard import typechecked
 
 
 @typechecked
-def build_prompt(row):
+def build_prompt(row, *args):
     return f"""{SYSTEM_PROMPT}
 r/{row.subreddit}
 Rule: {row.rule}
