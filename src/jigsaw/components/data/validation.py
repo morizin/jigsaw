@@ -1,13 +1,15 @@
-from pydantic import validate_call
+from typeguard import typechecked
 from ... import logger
 from ...entity.common import FilePath
 from pathlib import Path
 from ...entity.config_entity import DataValidationConfig, DataSchema
-from ...utils.common import read_csv, save_json, print_format
+from ...utils.common import load_csv, save_json, print_format
 from collections import defaultdict
 from pandas.api.types import is_object_dtype, is_integer_dtype
 
 class DataValidationComponent:
+
+    @typechecked
     def __init__(self, config: DataValidationConfig):
         self.config = config
         self.names = [i.name for i in self.config.schemas]
@@ -49,9 +51,9 @@ class DataValidationComponent:
 
         save_json(self.status, self.outdir / "status.json")
 
-    @validate_call
+    @typechecked
     def find_missing_columns(self, data_path: FilePath, schema: DataSchema, train=True):
-        data = read_csv(data_path)
+        data = load_csv(data_path)
         data_cols = data.columns
         if not train:
             schema.schema.pop(schema.target)
@@ -72,10 +74,10 @@ class DataValidationComponent:
             logger.error(f"[FAILED] Check Missing Columns: {schema.name}.{data_path.name}")
             raise Exception(f"File {data_path.name} of Dataset {schema.name} have missing values")
 
-    @validate_call
+    @typechecked
     def find_mismatch_dtype(self, data_path: FilePath, schema: DataSchema, train = True):
         validation_status = True
-        data = read_csv(data_path)
+        data = load_csv(data_path)
 
         for (column, dtype) in schema.schema.items():
             if dtype.lower() in ('str', 'string', 'object'):
@@ -99,11 +101,12 @@ class DataValidationComponent:
         else:
             logger.error(f"[FAILED] Check Mismatch Datatype: {schema.name}.{data_path.name}")
 
+    @typechecked
     def find_data_redundancy(self, data_path: FilePath, features: list[str]):
         validation_status = False
         try:
             file_name = "::".join(str(data_path).split("/")[-2:])
-            data = read_csv(data_path)
+            data = load_csv(data_path)
             nrow = data.shape[0]
             data = data.drop_duplicates(subset = features, ignore_index = True)
             if nrow - data.shape[0] > 0:
@@ -118,5 +121,6 @@ class DataValidationComponent:
             logger.error(f"Checking Data Redundancy [FAILED]: {e}")
         self.status[file_name.split("::")[0]][file_name.split("::")[1]]['data_redundancy'] = not validation_status
 
+    @typechecked
     def get_statistics(self, path: FilePath):
         pass

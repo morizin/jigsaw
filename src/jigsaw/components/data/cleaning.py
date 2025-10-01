@@ -1,6 +1,6 @@
 from ...entity.config_entity import DataTransformationConfig
 from ... import logger
-from ...entity.common import Directory
+from ...entity.common import FilePath, Directory
 from ...utils.common import save_csv
 from pandas.core.frame import DataFrame
 from pandas.api.types import is_string_dtype
@@ -14,9 +14,9 @@ from typeguard import typechecked
 def remove_duplicates(
     config: DataTransformationConfig,
     data: pd.DataFrame,
-    path: list,
+    path: list[str],
     name: str,
-    outdir: Path | str | None = None,
+    outdir: FilePath | None = None,
 ) -> pd.DataFrame:
     dataname, filename = path
 
@@ -45,7 +45,7 @@ def clean_text(
     data: DataFrame,
     path: list,
     name: str,
-    outdir: Path | str | None = None
+    outdir: FilePath | None = None
 ) -> DataFrame:
     def clean_text(text):
         return clean(
@@ -89,7 +89,7 @@ def urlparse(
         data: DataFrame,
         path : list[str],
         name : str,
-        outdir: Path | str | None = None
+        outdir: FilePath | None = None
         ) -> DataFrame:
     def url_to_semantics(text: str) -> str:
         if not isinstance(text, str):

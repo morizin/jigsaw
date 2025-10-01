@@ -26,10 +26,7 @@ data-transformation:
 
 model-training:
   outdir: "models/"
-  datasets: null
-  fold: -1
+  indir: *data_ingestion
+  fold: 1
   engine: "classifier"
-  tokenizer:
-    max-length: 2048
-    truncation: true
-    padding: 'longest'
+  few-shot: true

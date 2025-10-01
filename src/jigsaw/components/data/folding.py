@@ -3,19 +3,21 @@ from ...entity.config_entity import DataTransformationConfig
 from sklearn.model_selection import KFold, StratifiedKFold
 from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
 from ...utils.common import save_csv
-from ...entity.common import Directory
+from ...entity.common import FilePath,Directory
 from pandas.api.types import is_integer_dtype
 from sklearn.preprocessing import LabelEncoder
+from typeguard import typechecked
 from ... import logger
 from pathlib import Path
 
 
+@typechecked
 def split_dataset(
     config: DataTransformationConfig,
     data: DataFrame,
-    path: list,
+    path: list[str],
     name: str,
-    outdir: Path | str | None = None,
+    outdir: FilePath | None = None,
 ) -> DataFrame:
     dataname, filename = path
     if filename == "sample_submission.csv":

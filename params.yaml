@@ -11,9 +11,9 @@ splitter:
 classifier:
   model-name: "microsoft/deberta-v3-small"
   nepochs: 1
-  learning-rate: 0.00002
-  batch-size: 16
-  gradient-accumulation-step: 1
+  learning-rate: !!float 2e-5
+  train-batch-size: 16
+  gradient-accumulation-steps: 1
   weight-decay: 0.01
   warmup-ratio: 0.1
   tokenizer:
