@@ -1,12 +1,13 @@
 from pandas.core.frame import DataFrame
-from ...entity.config_entity import DataTransformationConfig
-from ...utils.common import save_csv
-from ...entity.config_entity import Directory
+from ...schema.config_entity import DataTransformationConfig
+from ....utils.common import save_csv
+from ...schema.config_entity import Directory
 from .cleaning import remove_duplicates
 from typeguard import typechecked
-from ... import logger
+from .... import logger
 from pathlib import Path
 import pandas as pd
+
 
 @typechecked
 def zero_shot_transform(
@@ -21,8 +22,12 @@ def zero_shot_transform(
         if filename != "sample_submission.csv":
             features = config.features[dataname]
             if not features:
-                logger.error(f"Error Transforming to Zero-shot Dataset: '{dataname}' doesn't have features indicated") 
-                raise Exception(f"Error Transforming to Zero-shot Dataset: '{dataname}' doesn't have features indicated")
+                logger.error(
+                    f"Error Transforming to Zero-shot Dataset: '{dataname}' doesn't have features indicated"
+                )
+                raise Exception(
+                    f"Error Transforming to Zero-shot Dataset: '{dataname}' doesn't have features indicated"
+                )
 
             try:
                 zeroshot = [data[features + ["rule_violation"]]]

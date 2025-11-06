@@ -1,0 +1,17 @@
+columns:
+  body: str
+  rule: str
+  subreddit: str
+  rule_violation: int64
+
+features:
+  - rule
+  - body
+
+target: rule_violation
+
+filepath: false
+categorical:
+  - rule
+  - subreddit
+  - rule_violation

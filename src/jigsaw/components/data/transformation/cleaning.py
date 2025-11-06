@@ -1,7 +1,7 @@
-from ...entity.config_entity import DataTransformationConfig
-from ... import logger
-from ...entity.common import FilePath, Directory
-from ...utils.common import save_csv
+from ...schema.config_entity import DataTransformationConfig
+from .... import logger
+from ....core import FilePath, Directory
+from ....utils.common import save_csv
 from pandas.core.frame import DataFrame
 from pandas.api.types import is_string_dtype
 from pathlib import Path
@@ -9,6 +9,7 @@ import pandas as pd
 from cleantext import clean
 import re
 from typeguard import typechecked
+
 
 @typechecked
 def remove_duplicates(
@@ -39,13 +40,14 @@ def remove_duplicates(
         save_csv(data, target_dir.path / filename)
     return data
 
+
 @typechecked
 def clean_text(
     config: DataTransformationConfig,
     data: DataFrame,
     path: list,
     name: str,
-    outdir: FilePath | None = None
+    outdir: FilePath | None = None,
 ) -> DataFrame:
     def clean_text(text):
         return clean(
@@ -83,42 +85,49 @@ def clean_text(
         save_csv(data, target_dir.path / filename)
     return data
 
+
 @typechecked
 def urlparse(
-        config: DataTransformationConfig, 
-        data: DataFrame,
-        path : list[str],
-        name : str,
-        outdir: FilePath | None = None
-        ) -> DataFrame:
+    config: DataTransformationConfig,
+    data: DataFrame,
+    path: list[str],
+    name: str,
+    outdir: FilePath | None = None,
+) -> DataFrame:
     def url_to_semantics(text: str) -> str:
         if not isinstance(text, str):
             return ""
 
-        url_pattern = r'https?://[^\s/$.?#].[^\s]*'
+        url_pattern = r"https?://[^\s/$.?#].[^\s]*"
         urls = re.findall(url_pattern, text)
-        
+
         if not urls:
-            return "" 
+            return ""
 
         all_semantics = []
         seen_semantics = set()
 
         for url in urls:
             url_lower = url.lower()
-            
-            domain_match = re.search(r"(?:https?://)?([a-z0-9\-\.]+)\.[a-z]{2,}", url_lower)
+
+            domain_match = re.search(
+                r"(?:https?://)?([a-z0-9\-\.]+)\.[a-z]{2,}", url_lower
+            )
             if domain_match:
                 full_domain = domain_match.group(1)
-                parts = full_domain.split('.')
+                parts = full_domain.split(".")
                 for part in parts:
-                    if part and part not in seen_semantics and part != 'www': # Avoid short parts like 'www'
+                    if (
+                        part and part not in seen_semantics and part != "www"
+                    ):  # Avoid short parts like 'www'
                         all_semantics.append(f"domain:{part}")
                         seen_semantics.add(part)
 
             # 2. Extract path parts
             path = re.sub(r"^(?:https?://)?[a-z0-9\.-]+\.[a-z]{2,}/?", "", url_lower)
-            path_parts = [p for p in re.split(r'[/_.-]+', path) if p and p.isalnum()] # Split by common delimiters
+            path_parts = [
+                p for p in re.split(r"[/_.-]+", path) if p and p.isalnum()
+            ]  # Split by common delimiters
             if path_parts:
                 all_semantics.append("path:")
             for part in path_parts:
@@ -132,12 +141,12 @@ def urlparse(
             return ""
 
         return f"\nURL Keywords: {' '.join(all_semantics)}"
-    
+
     dataname, filename = path
-    
+
     try:
         logger.info(f"Parsing URL of '{dataname}.{filename}'")
-        for (col, dtype) in data.dtypes.items():
+        for col, dtype in data.dtypes.items():
             if is_string_dtype(dtype):
                 data[col] += data[col].apply(url_to_semantics)
     except Exception as e:
@@ -145,6 +154,8 @@ def urlparse(
         raise e
 
     if outdir:
-        target_dir = Directory(path = (Path(outdir) if isinstance(outdir, str) else outdir) / name)
+        target_dir = Directory(
+            path=(Path(outdir) if isinstance(outdir, str) else outdir) / name
+        )
         save_csv(data, target_dir.path / filename)
     return data

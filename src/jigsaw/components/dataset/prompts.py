@@ -1,9 +1,14 @@
-from ..constants.prompt import *
+from ...constants.prompt import (
+    COMPLETION_PHRASE,
+    SYSTEM_PROMPT,
+    POSITIVE_ANSWER,
+    NEGATIVE_ANSWER,
+)
 from typeguard import typechecked
 
 
 @typechecked
-def build_prompt(row, *args):
+def few_shot_completion_prompt(row, *args):
     return f"""{SYSTEM_PROMPT}
 r/{row.subreddit}
 Rule: {row.rule}
@@ -25,7 +30,7 @@ Rule: {row.rule}
 
 
 @typechecked
-def build_chat_prompt(row, tokenizer):
+def few_shot_chat_prompt(row, tokenizer):
     SYS_PROMPT = f"""
 You are given a comment on reddit. Your task is to classify if it violates the given rule. Only respond {POSITIVE_ANSWER} or {NEGATIVE_ANSWER}.
 Rule : {row.rule.strip()}
@@ -46,6 +51,23 @@ Rule : {row.rule.strip()}
     messages = tokenizer.apply_chat_template(
         messages, add_generation_prompt=True, tokenize=False
     )
-    # print(messages)
-    # raise
+    return messages
+
+
+def zero_shot_chat_prompt(row, tokenizer):
+    messages = [
+        {
+            "role": "system",
+            "content": SYSTEM_PROMPT.strip() + f"Rule : {row.rule.strip()}",
+        },
+        {"role": "user", "content": row.body.strip()},
+    ]
+
+    messages = (
+        tokenizer.apply_chat_template(
+            messages, add_generation_prompt=True, tokenize=False
+        )
+        + f"{COMPLETION_PHRASE}:"
+    )
+
     return messages

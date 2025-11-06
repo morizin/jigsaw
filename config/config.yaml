@@ -1,32 +1,56 @@
-artifact_root: "artifacts/"
+artifact-root: "artifact"
+seed: 2345
+schema-path: "schemas"
+debug: true
 
-data-ingestion:
-  outdir: &data_ingestion "data/"
-  raw:
-    source: kaggle
-    type: competition
-    name: jigsaw-agile-community-rules
+data:
+  sources:
+    competition:
+      source: kaggle
+      type: competition
+      name: jigsaw-agile-community-rules
 
-data-validation:
-  outdir: "data/"
-  statistics: false
+    syn:
+      source: kaggle
+      type: dataset
+      name: morizin/jigsaw-syn
 
-data-transformation:
-  outdir: "data/"
-  indir: *data_ingestion
-  splitter: splitter
-  urlparse: true
+  validation:
+    statistics: true
+    data-drift: true
+    report-name: "report"
+
+
+transformation:
+  splitter: false
+    # type: kfold # groupkfold, smlkf, stratifiedkfold
+    # nsplits: 5
+    # labels: 
+    #   - rule
+    #   - rule_violation
+  urlparse: false
   wash: false
-  zero: false
+  zero: true
   triplet: false
   #   ntriplets: 1
   #   nsamples: 5
-    
   pairwise: false
 
 model-training:
   outdir: "models/"
-  indir: *data_ingestion
-  fold: 1
+  fold: -1
   engine: "classifier"
-  few-shot: true
+  few-shot: false
+
+classifier:
+  model-name: "/kaggle/input/notebook2cf3dd53b0/artifacts/models/checkpoint-108"
+  nepochs: 1
+  learning-rate: !!float 2e-4
+  train-batch-size: 4
+  gradient-accumulation-steps: 1
+  weight-decay: 0.01
+  warmup-ratio: 0.03
+  tokenizer:
+    max-length: 2048
+    truncation: true
+    padding: 'longest'

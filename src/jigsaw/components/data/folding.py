@@ -1,9 +1,9 @@
 from pandas.core.frame import DataFrame
-from ...entity.config_entity import DataTransformationConfig
+from ...schema.config_entity import DataTransformationConfig
 from sklearn.model_selection import KFold, StratifiedKFold
 from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
 from ...utils.common import save_csv
-from ...entity.common import FilePath,Directory
+from ...core import FilePath, Directory
 from pandas.api.types import is_integer_dtype
 from sklearn.preprocessing import LabelEncoder
 from typeguard import typechecked
@@ -81,7 +81,9 @@ def split_dataset(
                 f"Folding '{dataname}.{filename}' into {split_config.nsplits} using {split_config.type} on column(s) {le_columns}"
             )
 
-            for fold, (_, test_index) in enumerate(splitter.split(data, data[le_columns])):
+            for fold, (_, test_index) in enumerate(
+                splitter.split(data, data[le_columns])
+            ):
                 data.loc[test_index, "fold"] = fold
 
             if isinstance(le_columns, str):
@@ -98,9 +100,11 @@ def split_dataset(
         )
         if le_columns:
             if isinstance(le_columns, list):
-                data = data.drop([col for col in le_columns if col.endswith('_le')], axis = 1)
+                data = data.drop(
+                    [col for col in le_columns if col.endswith("_le")], axis=1
+                )
             elif le_columns.endswith("_le"):
-                data = data.drop(le_columns, axis = 1)
+                data = data.drop(le_columns, axis=1)
 
         splitter = KFold(
             split_config.nsplits,
@@ -108,9 +112,8 @@ def split_dataset(
             random_state=split_config.random_state,
         )
         logger.info(
-            f"Folding '{dataname}.{filename}' into {split_config.nsplits} using kfold" 
+            f"Folding '{dataname}.{filename}' into {split_config.nsplits} using kfold"
         )
-        
 
         for fold, (_, test_index) in enumerate(splitter.split(data)):
             data.loc[test_index, "fold"] = fold

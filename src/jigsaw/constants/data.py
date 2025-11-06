@@ -1,0 +1,4 @@
+INGESTED_DATA_FOLDER = "raw"
+REPORT_NAME = "report"
+VALID_PREFIX = "valid"
+INVALID_PREFIX = "invalid"

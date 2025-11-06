@@ -1,21 +1,21 @@
 from pydantic import validate_call
 import pandas as pd
-from ... import logger
-from ...entity.common import Directory
-from ...entity.config_entity import DataTransformationConfig, DataSplitParams
+from .... import logger
+from ....core import Directory
+from ...schema.config_entity import DataTransformationConfig, DataSplitConfig
 
 from .cleaning import remove_duplicates, clean_text, urlparse
 from .zeroshot import zero_shot_transform
-from .folding import split_dataset
+from ..folding import split_dataset
 from .triplet import triplet_dataset
 from pathlib import Path
 from cleantext import clean
 from pandas.api.types import is_string_dtype
-from ...utils.common import load_csv, save_csv, print_format
+from ....utils.common import load_csv, save_csv, print_format
 from typeguard import typechecked
 
-class DataTransformationComponent:
 
+class DataTransformationComponent:
     @typechecked
     def __init__(self, config: DataTransformationConfig):
         self.config = config
@@ -96,15 +96,15 @@ class DataTransformationComponent:
 
     def __call__(self):
         for name in self.names:
-            target_dir = Directory(path = self.outdir / (self.config.final_dir + name)) 
+            target_dir = Directory(path=self.outdir / (self.config.final_dir + name))
             for path in (self.indir / name).iterdir():
                 data = load_csv(path)
                 path = str(path).split("/")[-2:]
-                for (dirname, process) in self.pipeline:
+                for dirname, process in self.pipeline:
                     data = process(
-                        config= self.config,
-                        data = data,
-                        path = path,
-                        name = dirname + name,
+                        config=self.config,
+                        data=data,
+                        path=path,
+                        name=dirname + name,
                     )
                 save_csv(data, target_dir.path / path[-1])

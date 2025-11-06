@@ -1,0 +1,23 @@
+columns:
+  row_id: int64
+  body: str
+  rule: str
+  subreddit: str
+  positive_example_1: str
+  positive_example_2: str
+  negative_example_1: str
+  negative_example_2: str
+  rule_violation: int64
+
+features:
+  - rule
+  - body
+
+target: rule_violation
+
+filepath: false
+
+categorical:
+  - rule
+  - subreddit
+  - rule_violation
