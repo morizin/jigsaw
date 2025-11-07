@@ -6,14 +6,15 @@ from ..constants import (
     MODELS_DIRECTORY_NAME,
     SCHEMA_DIR,
 )
-from ..constants.data import INGESTED_DATA_FOLDER, REPORT_NAME
-from ..errors import DataNotFoundError, DirectoryNotFoundError
+from ..constants.data import INGESTED_DATA_FOLDER, REPORT_NAME, TRANSFORM_DIR_NAME
+from ..errors import DataNotFoundError, DirectoryNotFoundError, ConfigurationError
 
 from ..core import (
     DataIngestionConfig,
     DataSource,
     DataValidationConfig,
     DataSchema,
+    DataDriftConfig,
     TripletDataConfig,
     DataTransformationConfig,
     DataSplitConfig,
@@ -23,9 +24,9 @@ from ..core import (
     FilePath,
     Directory,
     DataIngestionArtifact,
+    DataValidationArtifact,
 )
-from .. import logger, PROJECT_NAME, timestamp
-from datetime import datetime
+from .. import logger, timestamp
 from box import ConfigBox
 from typeguard import typechecked
 
@@ -37,7 +38,8 @@ class ConfigurationManager:
         config_path: FilePath = CONFIG_FILE_PATH,
     ):
         self.config: ConfigBox = load_yaml(config_path)
-        seed_everything(self.config.seed)
+        self.seed = self.config.seed
+        seed_everything(self.seed)
 
         n_procs, n_threads = get_hw_details()
         self.config.n_procs = n_procs
@@ -46,7 +48,7 @@ class ConfigurationManager:
         logger.info(f"Running on {n_procs} CPU(s) with {n_threads} Thread(s) each")
 
         self.artifact_root: Directory = (
-            Directory(path=self.config.artifact_root)  # // timestamp
+            Directory(path=self.config.artifact_root) // timestamp
         )
 
     def get_data_ingestion_config(self) -> DataIngestionConfig:
@@ -108,120 +110,65 @@ class ConfigurationManager:
             logger.error(e)
             raise Exception(e)
 
+        data_drift_config = None
+        if config.get("data_drift", None):
+            data_drift_config = DataDriftConfig(
+                n_splits=config.data_drift.n_splits,
+                n_iterations=config.data_drift.n_iterations,
+                dimension=config.data_drift.dimension,
+            )
+
         return DataValidationConfig(
             outdir=target_dir,
             report_name=config.get("report_name", REPORT_NAME),
             indir=input_dir,
             statistics=config.statistics,
-            data_drift=config.data_drift,
+            data_drift=data_drift_config,
             schemas=schemas,
         )
 
     @typechecked
-    def get_data_transformation_config(self) -> DataTransformationConfig:
-        data_transform = self.config.data_transformation
-        if hasattr(data_transform, "splitter") and data_transform.splitter:
+    def get_data_transformation_config(
+        self, data_validation_artifact: DataValidationArtifact
+    ) -> DataTransformationConfig:
+        data_transform = self.config.data
+        splitter = False
+        if data_transform.get("splitter", None):
             try:
-                split_config = self.params[data_transform.splitter]
                 splitter = DataSplitConfig(
-                    type=split_config.type,
-                    nsplits=split_config.nsplits,
-                    random_state=split_config.random_state,
+                    type=data_transform.splitter.type,
+                    n_splits=data_transform.splitter.n_splits,
+                    labels=data_transform.splitter.get("labels", None),
                 )
-
-                if hasattr(split_config, "labels"):
-                    splitter.labels = split_config.labels
-            except KeyError:
-                logger.error(f"Splitter '{data_transform.splitter} doesn't exist")
-                splitter = None
             except Exception as e:
+                e = ConfigurationError(message=e)
+                logger.error(e)
                 raise e
 
-        else:
-            splitter = None
-
-        if hasattr(data_transform, "triplet") and data_transform.triplet:
-            triplet_config = TripletDataConfig(
-                ntriplets=data_transform.triplet.ntriplets,
-                nsamples=data_transform.triplet.nsamples,
-                random_state=self.params.SEED,
-            )
-        else:
-            triplet_config = None
-
-        status_file = load_json(
-            self.artifact_root.path
-            / os.path.join(self.config.data_validation.outdir, "status.json")
-        )
-
-        features = dict()
-        targets = dict()
-        names = []
-        for name, schema in self.schema.items():
-            names.append(name)
-            if name in status_file:
-                for value in status_file[name].values():
-                    if value["data_redundancy"]:
-                        try:
-                            features[name] = schema.features
-                            targets[name] = schema.target
-                        except Exception as e:
-                            logger.error(e)
-                            features[name] = None
-                            targets[name] = None
-
-        if not hasattr(data_transform, "urlparse"):
-            data_transform.urlparse = False
-
-        if not hasattr(data_transform, "wash"):
-            data_transform.wash = False
-
-        if not hasattr(data_transform, "zero"):
-            data_transform.zero = False
-
-        if not hasattr(data_transform, "pairwise"):
-            data_transform.pairwise = False
-
-        final_dir = ""
-        if len(features):
-            final_dir = "cleaned_" + final_dir
-
-        if data_transform.urlparse:
-            final_dir = "parse_" + final_dir
-
-        if data_transform.wash:
-            final_dir = "washed_" + final_dir
-
-        if data_transform.zero:
-            final_dir = "zero_" + final_dir
-
-        if triplet_config:
-            final_dir = "triplet_" + final_dir
-
-        if data_transform.pairwise:
-            final_dir = "pairwise_" + final_dir
-
-        if splitter:
-            final_dir = "folded_" + final_dir
-
-        self.final_dir = final_dir
-        self.names = names
+        triplet_config = False
+        if data_transform.get("triplet", None):
+            try:
+                triplet_config = TripletDataConfig(
+                    anchor_col=data_transform.triplet.anchor_column,
+                    sample_col=data_transform.triplet.sample_column,
+                    n_negatives=data_transform.triplet.n_negatives,
+                    n_samples=data_transform.triplet.n_samples,
+                    reversed=data_transform.triplet.get("reversed", False),
+                )
+            except Exception as e:
+                e = ConfigurationError(message=e)
+                logger.error(e)
+                raise e
 
         return DataTransformationConfig(
-            outdir=Directory(path=self.artifact_root.path / data_transform.outdir),
-            indir=Directory(
-                path=self.artifact_root.path / self.config.data_ingestion.outdir
-            ),
-            datasets=names,
+            outdir=self.artifact_root // DATA_DIRECTORY_NAME // TRANSFORM_DIR_NAME,
+            indir=data_validation_artifact.valid_outdir,
+            schemas=data_validation_artifact.schemas,
             splitter=splitter,
-            features=features,
-            targets=targets,
-            urlparse=data_transform.urlparse,
-            wash=data_transform.wash,
             triplet=triplet_config,
-            zero=data_transform.zero,
-            pairwise=data_transform.pairwise,
-            final_dir=final_dir,
+            pairwise=data_transform.get("pairwise", False),
+            zero_shot=data_transform.get("zero-shot", False),
+            cache_intermediate=data_transform.get("cache-intermediate", False),
         )
 
     @typechecked

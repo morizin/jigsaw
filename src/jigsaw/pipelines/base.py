@@ -53,7 +53,7 @@ class BasePipelines:
                 self.config.get_data_validation_config(data_ingestion_artifact)
             )
 
-            data_validation_artifact: DataIngestionArtifact = DataValidationComponent(
+            data_validation_artifact: DataValidationArtifact = DataValidationComponent(
                 data_validation_config
             )()
 
@@ -72,9 +72,9 @@ class BasePipelines:
                 self.config.get_data_transformation_config(data_validation_artifact)
             )
 
-            data_transformation_artifact: DataTransformationArtifact = (
-                DataTransformationComponent(data_transformation_config)()
-            )
+            data_transformation_artifact = DataTransformationComponent(
+                data_transformation_config
+            )()
             logger.info("Data Transformation Completed")
             return data_transformation_artifact
 

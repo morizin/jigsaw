@@ -1,38 +1,46 @@
 from pandas.core.frame import DataFrame
-from ...schema.config_entity import DataTransformationConfig
+from ....core import DataTransformationConfig, Directory
+from ....errors import TransformationError
 from sklearn.model_selection import KFold, StratifiedKFold
 from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
-from ...utils.common import save_csv
-from ...core import FilePath, Directory
+from ....utils.common import save_csv
 from pandas.api.types import is_integer_dtype
 from sklearn.preprocessing import LabelEncoder
 from typeguard import typechecked
-from ... import logger
-from pathlib import Path
+from .... import logger
+import pandas as pd
+import os
 
 
 @typechecked
 def split_dataset(
     config: DataTransformationConfig,
-    data: DataFrame,
-    path: list[str],
-    name: str,
-    outdir: FilePath | None = None,
+    data: pd.DataFrame,
+    dataname: str,
+    filename: str,
+    outdir: Directory | None = None,
 ) -> DataFrame:
-    dataname, filename = path
-    if filename == "sample_submission.csv":
-        return data
     split_config = config.splitter
+    try:
+        schema = config.schemas[dataname]
+    except Exception as e:
+        e = TransformationError(
+            "Schema of dataset '{dataname}' is missing",
+            dataname=dataname,
+            file_name=filename,
+            error=e,
+        )
+        logger.error(e)
+        raise e
 
     data["fold"] = -1
     _splits_ = ["kfold", "skfold", "mlskfold"]
 
-    if dataname in config.targets or split_config.labels:
-        labels = config.targets[dataname]
-        if split_config.labels:
-            labels = split_config.labels
+    labels = schema.target
+    if split_config.labels:
+        labels = split_config.labels
 
-        if labels and _splits_.index("skfold") > _splits_.index(split_config.type):
+        if _splits_.index("skfold") > _splits_.index(split_config.type):
             split_config.type = "skfold"
 
     if isinstance(labels, list):
@@ -48,18 +56,18 @@ def split_dataset(
         splitter = StratifiedKFold
     elif split_config.type == "mlskfold":
         splitter = MultilabelStratifiedKFold
-        if hasattr(splitter, "labels"):
-            labels = split_config.labels
+
+    if hasattr(splitter, "labels"):
+        labels = split_config.labels
 
     splitter = splitter(
-        split_config.nsplits,
-        shuffle=hasattr(split_config, "random_state"),
-        random_state=split_config.random_state,
+        split_config.n_splits,
+        shuffle=os.environ.get("PYTHONHASHSEED", 0) != 0,
+        random_state=int(os.environ.get("PYTHONHASHSEED", 1234)),
     )
-
     try:
+        le_columns = []
         if labels:
-            le_columns = []
             if isinstance(labels, list):
                 for col in labels:
                     if not is_integer_dtype(data[col]):
@@ -75,10 +83,16 @@ def split_dataset(
                     data[le_columns] = LabelEncoder().fit_transform(data[labels])
 
             else:
-                raise Exception("Labels are neither str or list[str]")
+                e = TransformationError(
+                    "Labels are neither str or list[str]",
+                    dataname=dataname,
+                    file_name=filename,
+                )
+                logger.error(e)
+                raise e
 
             logger.info(
-                f"Folding '{dataname}.{filename}' into {split_config.nsplits} using {split_config.type} on column(s) {le_columns}"
+                f"Folding '{dataname}.{filename}' into {split_config.n_splits} using {split_config.type} on column(s) {le_columns}"
             )
 
             for fold, (_, test_index) in enumerate(
@@ -95,9 +109,13 @@ def split_dataset(
                 data = data.drop(le_columns, axis=1)
 
     except Exception as e:
-        logger.error(
-            f"Labels are not given for '{dataname}.{filename}' to use {split_config.type} Folding {e}. \nUsing Regular KFold"
+        e = TransformationError(
+            f"Labels are not given to use {split_config.type} folding technique. \nUsing Regular KFold",
+            dataname=dataname,
+            file_name=filename,
         )
+        logger.error(e)
+
         if le_columns:
             if isinstance(le_columns, list):
                 data = data.drop(
@@ -107,19 +125,18 @@ def split_dataset(
                 data = data.drop(le_columns, axis=1)
 
         splitter = KFold(
-            split_config.nsplits,
-            shuffle=hasattr(split_config, "random_state"),
-            random_state=split_config.random_state,
+            split_config.n_splits,
+            shuffle=os.environ.get("PYTHONHASHSEED", 0) != 0,
+            random_state=int(os.environ.get("PYTHONHASHSEED", 1234)),
         )
         logger.info(
-            f"Folding '{dataname}.{filename}' into {split_config.nsplits} using kfold"
+            f"Folding '{dataname}.{filename}' into {split_config.n_splits} using kfold"
         )
 
         for fold, (_, test_index) in enumerate(splitter.split(data)):
             data.loc[test_index, "fold"] = fold
 
     if outdir:
-        target_dir = Directory(path=outdir / name)
-        save_csv(data, target_dir.path / filename)
+        save_csv(data, outdir // f"folded_{dataname}" / filename)
 
     return data

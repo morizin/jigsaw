@@ -1,14 +1,17 @@
 from .config_entity import (
-    DataSchema,
-    DataSource,
-    DataSplitConfig,
-    TripletDataConfig,
-    TokenizerConfig,
-    EngineConfig,
     DataIngestionConfig,
     DataValidationConfig,
     DataTransformationConfig,
     ModelTrainingConfig,
+)
+from .util_entity import (
+    DataSchema,
+    DataSource,
+    DataSplitConfig,
+    DataDriftConfig,
+    TripletDataConfig,
+    TokenizerConfig,
+    EngineConfig,
 )
 
 from .artifact_entity import (
@@ -25,6 +28,7 @@ __all__ = [
     "ZipFile",
     "DataSchema",
     "DataSource",
+    "DataDriftConfig",
     "DataSplitConfig",
     "TripletDataConfig",
     "TokenizerConfig",

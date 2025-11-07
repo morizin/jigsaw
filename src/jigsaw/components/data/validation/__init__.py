@@ -4,8 +4,13 @@ from .text import (
     detect_data_drift,
 )
 from pandas.api.types import is_object_dtype, is_integer_dtype, is_string_dtype
+from ....constants.data import (
+    VALID_PREFIX,
+    INVALID_PREFIX,
+    REPORT_IMAGES_DIR,
+    REPORT_NAME,
+)
 from ....core import FilePath, DataValidationConfig, DataSchema, DataValidationArtifact
-from ....constants.data import VALID_PREFIX, INVALID_PREFIX
 from ....utils.common import load_csv, save_json, save_csv
 from ....errors import ValidationError, ValidationWarning
 from ....constants import DATA_DIRECTORY_NAME
@@ -51,7 +56,7 @@ class DataValidationComponent(Component):
             self.config.outdir // f"{INVALID_PREFIX}_{DATA_DIRECTORY_NAME}"
         )
         self.report = self.config.outdir // f"{self.config.report_name}"
-        self.report // "images"
+        self.report_img = self.report // REPORT_IMAGES_DIR
 
     def __call__(self):
         for name, schema in self.config.schemas.items():
@@ -61,10 +66,10 @@ class DataValidationComponent(Component):
                     valid_data, invalid_data = process(
                         valid_data, name, file, schema, train=True
                     )
-                if valid_data is not None:
-                    save_csv(valid_data, self.valid_outdir // name / file)
-                if invalid_data is not None:
-                    save_csv(invalid_data, self.invalid_outdir // name / file)
+                    if valid_data is not None:
+                        save_csv(valid_data, self.valid_outdir // name / file)
+                    if invalid_data is not None:
+                        save_csv(invalid_data, self.invalid_outdir // name / file)
 
             for file in filter(lambda x: str(x).endswith(".csv"), schema.test):
                 valid_data = load_csv(self.config.indir / name / file)
@@ -72,10 +77,10 @@ class DataValidationComponent(Component):
                     valid_data, invalid_data = process(
                         valid_data, name, file, schema, train=False
                     )
-                if valid_data is not None:
-                    save_csv(valid_data, self.valid_outdir // name / file)
-                if invalid_data is not None:
-                    save_csv(invalid_data, self.invalid_outdir // name / file)
+                    if valid_data is not None:
+                        save_csv(valid_data, self.valid_outdir // name / file)
+                    if invalid_data is not None:
+                        save_csv(invalid_data, self.invalid_outdir // name / file)
 
             for file in filter(lambda x: str(x).endswith(".csv"), schema.submission):
                 submission_df = load_csv(self.config.indir / name / file)
@@ -88,8 +93,9 @@ class DataValidationComponent(Component):
                     save_csv(submission_df, self.invalid_outdir / name / file)
 
         self.status["validation_status"] = self.validation_status
-        save_json(self.status, self.report / "report.json")
+        save_json(self.status, self.report / f"{REPORT_NAME}.json")
         return DataValidationArtifact(
+            validation_status=self.validation_status,
             valid_outdir=self.valid_outdir,
             invalid_outdir=self.invalid_outdir,
             report_dir=self.report,
@@ -309,29 +315,36 @@ class DataValidationComponent(Component):
                     statistics[column] = text_statistics(
                         data[column],
                         column=column,
-                        path=self.report // "images" // name // file,
+                        path=self.report_img // name // file,
                     )
                     statistics[column]["word_cloud"] = generate_word_cloud(
-                        data,
-                        column,
-                        self.report // "images" // name // file,
-                        int(os.environ["PYTHONHASHSEED"]),
+                        data=data,
+                        column=column,
+                        path=self.report_img // name // file,
+                        seed=int(os.environ["PYTHONHASHSEED"]),
                     )
-                    if train:
-                        statistics[column]["data_drift"] = detect_data_drift(
-                            data=data,
-                            column=column,
-                            path=self.report // "images" // name // file,
-                            seed=int(os.environ["PYTHONHASHSEED"]),
-                        )
-                    else:
-                        statistics[column]["data_drift"] = detect_data_drift(
-                            data=train_data,
-                            column=column,
-                            path=self.report // "images" // name // file,
-                            current_data=data,
-                            seed=int(os.environ["PYTHONHASHSEED"]),
-                        )
+                    if self.config.data_drift:
+                        if train:
+                            statistics[column]["data_drift"] = detect_data_drift(
+                                data=data,
+                                column=column,
+                                n_splits=self.config.data_drift.n_splits,
+                                dimension=self.config.data_drift.dimension,
+                                n_iteration=self.config.data_drift.n_iterations,
+                                path=self.report // "images" // name // file,
+                                seed=int(os.environ["PYTHONHASHSEED"]),
+                            )
+                        else:
+                            statistics[column]["data_drift"] = detect_data_drift(
+                                data=train_data,
+                                column=column,
+                                n_splits=self.config.data_drift.n_splits,
+                                dimension=self.config.data_drift.dimension,
+                                n_iteration=self.config.data_drift.n_iterations,
+                                path=self.report // "images" // name // file,
+                                current_data=data,
+                                seed=int(os.environ["PYTHONHASHSEED"]),
+                            )
                 elif column in schema.filepath:
                     pass
                 else:

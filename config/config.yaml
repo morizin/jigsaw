@@ -17,24 +17,30 @@ data:
 
   validation:
     statistics: true
-    data-drift: true
+    data-drift: 
+      n_splits: 20
+      n_iterations: 100
+      dimension: 500
     report-name: "report"
+  
+  splitter: 
+    type: mlskfold # groupkfold, smlkf, stratifiedkfold
+    n_splits: 5
+    labels: 
+      - rule
+      - rule_violation
 
+  zero-shot: true
+  triplet: 
+    anchor-column: rule
+    sample-column: body
+    n_negatives: 5
+    n_samples: 5
+    n_resample: 5
+    reversed: true
 
-transformation:
-  splitter: false
-    # type: kfold # groupkfold, smlkf, stratifiedkfold
-    # nsplits: 5
-    # labels: 
-    #   - rule
-    #   - rule_violation
-  urlparse: false
-  wash: false
-  zero: true
-  triplet: false
-  #   ntriplets: 1
-  #   nsamples: 5
   pairwise: false
+  cache-intermediate: false
 
 model-training:
   outdir: "models/"
