@@ -1,110 +1,106 @@
-from pydantic import validate_call
-import pandas as pd
 from .... import logger
 from ....core import Directory
-from ...schema.config_entity import DataTransformationConfig, DataSplitConfig
+from ....core.config_entity import DataTransformationConfig
+from ....core.artifact_entity import DataTransformationArtifact
 
-from .cleaning import remove_duplicates, clean_text, urlparse
+from .cleaning import remove_duplicates
 from .zeroshot import zero_shot_transform
-from ..folding import split_dataset
+from .folding import split_dataset
 from .triplet import triplet_dataset
-from pathlib import Path
-from cleantext import clean
-from pandas.api.types import is_string_dtype
-from ....utils.common import load_csv, save_csv, print_format
+from ....constants import LENGTH
+from ....utils.common import load_csv, save_csv
 from typeguard import typechecked
+import pandas as pd
+
+PIPELINES = {
+    "cleaned": remove_duplicates,
+    "zero_shot": zero_shot_transform,
+    "triplet": triplet_dataset,
+    "splitter": split_dataset,
+}
 
 
 class DataTransformationComponent:
     @typechecked
     def __init__(self, config: DataTransformationConfig):
         self.config = config
+        self.schemas = config.schemas
 
-        self.outdir = self.config.outdir.path
-        self.indir = self.config.indir.path
-
-        self.names = []
-        self.pipeline = []
-
-        final_dir = ""
-
-        length = 100
+        length = min(LENGTH, max(list(map(len, self.schemas.keys())))) + 15
         print("=" * length)
-        print_format("Datasets Available", length)
+        print("|", "Datasets Available".center(length - 4), "|")
         print("=" * length)
-        for name in self.config.datasets:
-            if (self.outdir / name).is_dir():
-                print_format(name, length)
-                self.names.append(str(name))
+        for name in self.schemas:
+            print("|", name.center(length - 4), "|")
         print("=" * length)
 
-        print()
+        self.pipelines = [PIPELINES["cleaned"]]
+        final_dir = []
+        for name, process in PIPELINES.items():
+            if getattr(self.config, name, False):
+                self.pipelines.append(process)
+                final_dir.append(name)
 
+        self.final_dir = "_".join(final_dir)
+        print(self.final_dir)
+        length = (
+            min(LENGTH, max(list(map(len, self.schemas.keys()))))
+            + 15
+            + len(self.final_dir)
+        )
         print("=" * length)
-        print_format("Datasets Generating", length)
+        print("|", "Datasets Generating".center(length - 4), "|")
         print("=" * length)
-        if self.config.features:
-            for name in self.names:
-                final_dir = "cleaned_" + final_dir
-                self.pipeline.append((final_dir, remove_duplicates))
-                print_format(self.indir / f"{final_dir}{name}/", length)
-            print("=" * length)
-
-        if self.config.urlparse:
-            for name in self.names:
-                final_dir = "parse_" + final_dir
-                self.pipeline.append((final_dir, urlparse))
-                print_format(self.indir / f"{final_dir}{name}/", length)
-            print("=" * length)
-
-        if self.config.wash:
-            for name in self.names:
-                final_dir = "washed_" + final_dir
-                self.pipeline.append((final_dir, clean_text))
-                print_format(self.indir / f"{final_dir}{name}/", length)
-            print("=" * length)
-
-        if self.config.zero:
-            for name in self.names:
-                final_dir = "zero_" + final_dir
-                self.pipeline.append((final_dir, zero_shot_transform))
-                print_format(self.indir / f"{final_dir}{name}/", length)
-            print("=" * length)
-
-        if self.config.triplet:
-            for name in self.names:
-                final_dir = "triplet_" + final_dir
-                self.pipeline.append((final_dir, triplet_dataset))
-                print_format(self.indir / f"{final_dir}{name}/", length)
-            print("=" * length)
-
-        if self.config.pairwise:
-            for name in self.names:
-                final_dir = "pairwise_" + final_dir
-                print_format(self.indir / f"{final_dir}{name}/", length)
-            print("=" * length)
-
-        if self.config.splitter:
-            for name in self.names:
-                final_dir = "folded_" + final_dir
-                self.pipeline.append((final_dir, split_dataset))
-                print_format(self.indir / f"{final_dir}{name}/", length)
-
-            print("=" * length)
-
-        self.config.final_dir = final_dir
+        for name in self.schemas:
+            print("|", f"{self.final_dir}_{name}".center(length - 4), "|")
+        print("=" * length)
 
     def __call__(self):
-        for name in self.names:
-            target_dir = Directory(path=self.outdir / (self.config.final_dir + name))
-            for path in (self.indir / name).iterdir():
-                data = load_csv(path)
-                path = str(path).split("/")[-2:]
-                for dirname, process in self.pipeline:
+        train_data = []
+        test_data = []
+        for name, schema in self.schemas.items():
+            indir = self.config.indir / name
+            for path in schema.train:
+                data = load_csv(indir / path)
+                for process in self.pipelines:
                     data = process(
                         config=self.config,
                         data=data,
-                        path=path,
-                        name=dirname + name,
+                        dataname=name,
+                        filename=path,
                     )
-                save_csv(data, target_dir.path / path[-1])
+                save_csv(data, self.config.outdir // f"{self.final_dir}_{name}" / path)
+                train_data.append(data)
+
+            for path in schema.test:
+                data = load_csv(indir / path)
+                for process in self.pipelines:
+                    data = process(
+                        config=self.config,
+                        data=data,
+                        dataname=name,
+                        filename=path,
+                    )
+                save_csv(data, self.config.outdir // f"{self.final_dir}_{name}" / path)
+                test_data.append(data)
+
+        train_data = pd.concat(train_data, axis=0).reset_index(drop=True)
+        save_csv(
+            train_data,
+            self.config.outdir // f"{self.final_dir}_combined" / "train.csv",
+        )
+
+        test_data = pd.concat(test_data, axis=0).reset_index(drop=True)
+        save_csv(
+            test_data,
+            self.config.outdir // f"{self.final_dir}_combined" / "test.csv",
+        )
+        return DataTransformationArtifact(
+            combined_train_file=self.config.outdir
+            / f"{self.final_dir}_combined"
+            / "train.csv",
+            combined_test_file=self.config.outdir
+            / f"{self.final_dir}_combined"
+            / "test.csv",
+            transformed_outdir=self.config.outdir,
+        )

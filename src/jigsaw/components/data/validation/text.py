@@ -141,12 +141,12 @@ def detect_data_drift(
     path: Directory,
     current_data: pd.DataFrame | None = None,
     n_splits: int = 5,
-    ndim: int = 500,
+    n_iteration: int = 100,
+    dimension: int = 500,
     seed: int = 1234,
 ) -> dict:
-    # So first of all we needed to create a empty array to sto embeding
     stat = {}
-    model = TfidfVectorizer(max_features=ndim, ngram_range=(1, 2))
+    model = TfidfVectorizer(max_features=dimension, ngram_range=(1, 2))
     if current_data is None:
         data["token_length"] = data[column].apply(lambda x: len(x.split()))
         data = data.sort_values(by="token_length", ignore_index=True)
@@ -233,7 +233,7 @@ def detect_data_drift(
         random_state=seed,
         stratify=data["fold"],
     )
-    model = RandomForestClassifier(n_estimators=100, random_state=seed)
+    model = RandomForestClassifier(n_estimators=n_iteration, random_state=seed)
     model.fit(embeddings, labels)
     preds = model.predict_proba(tembeddings)
     stat["accuracy"] = round(accuracy_score(tlabels, np.argmax(preds, axis=1)), 4)

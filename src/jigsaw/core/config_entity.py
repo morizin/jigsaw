@@ -1,6 +1,13 @@
 from pydantic import BaseModel
 from .io_types import Directory
-from .entity import DataSchema, DataSource
+from .util_entity import (
+    DataSchema,
+    DataSource,
+    DataDriftConfig,
+    TripletDataConfig,
+    EngineConfig,
+    DataSplitConfig,
+)
 
 
 class DataIngestionConfig(BaseModel):
@@ -10,57 +17,22 @@ class DataIngestionConfig(BaseModel):
 
 class DataValidationConfig(BaseModel):
     outdir: Directory
-    report_name: str
     indir: Directory
+    report_name: str
     statistics: bool
-    data_drift: bool
+    data_drift: DataDriftConfig | None
     schemas: dict[str, DataSchema]
-
-
-class DataSplitConfig(BaseModel):
-    type: str
-    nsplits: int = 5
-    random_state: int = 2025
-    labels: list[str] | str | None = None
-
-
-class TripletDataConfig(BaseModel):
-    ntriplets: int
-    nsamples: int
-    random_state: int
 
 
 class DataTransformationConfig(BaseModel):
     outdir: Directory
     indir: Directory
-    datasets: list[str]
-    splitter: None | DataSplitConfig
-    features: dict[str, list[str] | None]
-    targets: dict[str, str | list[str] | None]
-    urlparse: bool
-    wash: bool
-    zero: bool
-    triplet: TripletDataConfig | None
+    schemas: dict[str, DataSchema]
+    zero_shot: bool
     pairwise: bool
-    final_dir: str | None = None
-
-
-class TokenizerConfig(BaseModel):
-    max_length: int
-    truncation: bool | str
-    padding: str | bool
-
-
-class EngineConfig(BaseModel):
-    model_name: str
-    nepochs: int
-    learning_rate: float
-    train_batch_size: int
-    valid_batch_size: None | int = None
-    gradient_accumulation_steps: int
-    weight_decay: float | None
-    warmup_ratio: float | None
-    tokenizer: TokenizerConfig
+    splitter: DataSplitConfig | bool
+    triplet: TripletDataConfig | bool
+    cache_intermediate: bool = False
 
 
 class ModelTrainingConfig(BaseModel):

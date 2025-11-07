@@ -52,3 +52,41 @@ class DataSource(BaseModel):
     source: str
     type: str
     name: str
+
+
+class DataDriftConfig(BaseModel):
+    n_splits: int = 5
+    n_iterations: int = 100
+    dimension: int = 500
+
+
+class DataSplitConfig(BaseModel):
+    type: str
+    n_splits: int = 5
+    labels: list[str] | str | None
+
+
+class TripletDataConfig(BaseModel):
+    anchor_col: str
+    sample_col: str
+    n_negatives: int = 5
+    n_samples: int = 5
+    reversed: bool = False
+
+
+class TokenizerConfig(BaseModel):
+    max_length: int
+    truncation: bool | str
+    padding: str | bool
+
+
+class EngineConfig(BaseModel):
+    model_name: str
+    nepochs: int
+    learning_rate: float
+    train_batch_size: int
+    valid_batch_size: None | int = None
+    gradient_accumulation_steps: int
+    weight_decay: float | None
+    warmup_ratio: float | None
+    tokenizer: TokenizerConfig

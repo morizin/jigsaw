@@ -34,6 +34,13 @@ class DirectoryNotFoundError(Exception):
         super().__init__(message)
 
 
+class ConfigurationError(Exception):
+    def __init__(self, object=None, message: str = ""):
+        if object is not None:
+            message += f" : {object}"
+        super().__init__(message)
+
+
 class ValidationError(Exception):
     def __init__(self, object=None, message: str = ""):
         if object is not None:
@@ -46,3 +53,17 @@ class ValidationWarning(Warning):
         if object is not None:
             message += f" : {object}"
         super().__init__(message)
+
+
+class TransformationError(Exception):
+    def __init__(
+        self, message: str = "", dataname: str = "", file_name: str = "", error=""
+    ):
+        super().__init__(f"{message} : {dataname}.{file_name} : {error}")
+
+
+class TransformationWarning(Warning):
+    def __init__(
+        self, message: str = "", dataname: str = "", file_name: str = "", error=""
+    ):
+        super().__init__(f"{message} : {dataname}.{file_name} : {error}")
