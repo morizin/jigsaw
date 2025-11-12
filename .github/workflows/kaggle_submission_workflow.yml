@@ -23,8 +23,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install uv
-        pip install kaggle
+        pip3 install uv
+        pip3 install kaggle
 
     - name: Building the code and publish it to Kaggle ${{ matrix.python-version }}
       run: ./scripts/publish_kaggle.sh <<< $(git log -1 --pretty=%s)
@@ -40,6 +40,9 @@ jobs:
       run: | 
         mkdir ./wheels
         kaggle datasets init --path ./wheels
+      env:
+        KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+        KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
 
     - name: Export Wheels into the folder
       run: pip3 download -r requirements.txt -d ./wheels
@@ -52,3 +55,6 @@ jobs:
         else
           kaggle datasets create --path ./wheels
         fi
+      env:
+        KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+        KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
