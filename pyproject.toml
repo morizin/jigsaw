@@ -15,7 +15,7 @@ dependencies = [
     "kagglesdk>=0.1.7",
     "matplotlib>=3.10.6",
     "mlflow>=3.4.0",
-    "nlpaug",
+    "nlpaug>=1.1.11",
     "numpy>1.26,<2.0",
     "pandas>=2.3.2",
     "pronouncing>=0.2.0",
@@ -38,5 +38,3 @@ dependencies = [
     "wordcloud>=1.9.4",
 ]
 
-[tool.uv.sources]
-nlpaug = { git = "https://github.com/makcedward/nlpaug.git" }

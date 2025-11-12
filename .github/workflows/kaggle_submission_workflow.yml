@@ -39,6 +39,7 @@ jobs:
     - name: Initialize Kaggle Datasets
       run: | 
         mkdir ./wheels
+        cp requirements.txt ./wheels/
         kaggle datasets init --path ./wheels
       env:
         KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}

@@ -1012,7 +1012,7 @@ requires-dist = [
     { name = "kagglesdk", specifier = ">=0.1.7" },
     { name = "matplotlib", specifier = ">=3.10.6" },
     { name = "mlflow", specifier = ">=3.4.0" },
-    { name = "nlpaug", git = "https://github.com/makcedward/nlpaug.git" },
+    { name = "nlpaug", specifier = ">=1.1.11" },
     { name = "numpy", specifier = ">1.26,<2.0" },
     { name = "pandas", specifier = ">=2.3.2" },
     { name = "pronouncing", specifier = ">=0.2.0" },
@@ -1456,12 +1456,15 @@ wheels = [
 [[package]]
 name = "nlpaug"
 version = "1.1.11"
-source = { git = "https://github.com/makcedward/nlpaug.git#23800cbb9632c7fc8c4a88d46f9c4ecf68a96299" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "gdown" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "requests" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1c/28/a799de8b713e7cf84214d48739d0343505ff0967f85055b82d65894e1d02/nlpaug-1.1.11-py3-none-any.whl", hash = "sha256:01d3befce09e46cb7d990839e0b7dd80ba3e991485f772e678d329ffeb97fd80", size = 410513, upload-time = "2022-07-07T05:23:07.263Z" },
 ]
 
 [[package]]
