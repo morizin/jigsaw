@@ -7,7 +7,7 @@ version=$(uv version --short)
 uv build
 if [ ! -f "./dist/dataset-metadata.json" ]; then
     kaggle datasets init -p ./dist/
-    sed -i "" 's/INSERT_[A-Z_]*/jigsaw/g' ./dist/dataset-metadata.json
+    sed -i 's/INSERT_[A-Z_]*/jigsaw/g' ./dist/dataset-metadata.json
 fi
 
 if [ $? -eq 0 ]; then
