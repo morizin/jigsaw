@@ -12,6 +12,7 @@ fi
 
 if [ $? -eq 0 ]; then
     read -p "Enter Version ($version) Message : " message
+    echo "Version $version : $message"
     kaggle datasets version -m "Version $version : $message" -p ./dist
 
     if [ $? -eq 0 ]; then
