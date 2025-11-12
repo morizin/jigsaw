@@ -3,7 +3,7 @@ name: Kaggle Submission Workflow
 on:
   push: 
     branches: [ "main" ]
-    
+  paths-ignore: [ "README.md" ]
 
 jobs:     
   build:
@@ -64,8 +64,7 @@ jobs:
         mkdir ./wheels
         cp requirements.txt ./wheels/
         kaggle datasets init --path ./wheels
-        ls
-        sed -i 's/INPUT_[^"]*/jigsaw_wheels/g' ./wheels/dataset-metadata.json
+        sed -i 's/INSERT_[^"]*/jigsaw_wheels/g' ./wheels/dataset-metadata.json
         cat ./wheels/dataset-metadata.json
       env:
         KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
