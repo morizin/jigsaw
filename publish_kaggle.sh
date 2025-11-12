@@ -18,5 +18,4 @@ if [ ! -f "./dist/dataset-metadata.json" ]; then
 fi
 
 read -p "Enter Version ($version) Message : " message
-message="${message// /_}"
 kaggle datasets version -m "Version $version : $message" -p ./dist
