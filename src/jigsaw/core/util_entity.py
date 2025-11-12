@@ -3,7 +3,8 @@ from .io_types import Directory, FilePath
 from ..constants import SCHEMA_DIR
 from .. import logger
 from glob import glob
-import os, yaml
+import os
+import yaml
 
 
 class DataSchema(BaseModel):

@@ -1,6 +1,7 @@
 import re
 from urllib.parse import urlparse
-import random, itertools
+import random
+import itertools
 import pronouncing
 import numpy as np
 import nlpaug.augmenter.word as naw

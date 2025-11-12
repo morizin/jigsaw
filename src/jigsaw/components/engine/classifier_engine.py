@@ -1,8 +1,6 @@
-import os
 from typeguard import typechecked
-import torch.nn as nn
 from ...schema.config_entity import ModelTrainingConfig
-from transformers import TrainingArguments, Trainer, AutoModelForSequenceClassification
+from transformers import TrainingArguments, Trainer
 import pandas as pd
 from ... import logger
 from pandas.core.frame import DataFrame

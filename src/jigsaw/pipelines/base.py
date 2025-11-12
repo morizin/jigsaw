@@ -5,7 +5,6 @@ from ..core import (
     DataTransformationConfig,
     DataIngestionArtifact,
     DataValidationArtifact,
-    DataTransformationArtifact,
 )
 from ..components.data import (
     DataIngestionComponent,

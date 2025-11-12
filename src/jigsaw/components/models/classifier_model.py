@@ -1,4 +1,3 @@
-import torch.nn as nn
 from transformers import AutoModelForSequenceClassification
 from ...schema.config_entity import ModelTrainingConfig
 

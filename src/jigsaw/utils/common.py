@@ -1,5 +1,5 @@
 from ..core.io_types import ZipFile, Directory, FilePath
-from .. import logger, PROJECT_NAME
+from .. import logger
 from .yaml_loader import YAMLoader
 from typeguard import typechecked
 from box import ConfigBox
@@ -11,7 +11,8 @@ import subprocess
 import platform
 import zipfile
 import random
-import os, re
+import os
+import re
 import pickle
 import torch
 import yaml
