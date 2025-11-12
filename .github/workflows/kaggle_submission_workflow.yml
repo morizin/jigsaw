@@ -64,7 +64,7 @@ jobs:
         mkdir ./wheels
         cp requirements.txt ./wheels/
         kaggle datasets init --path ./wheels
-        sed -i 's/INSERT_[^"]*/jigsaw-wheels/g' ./wheels/dataset-metadata.json
+        sed -i 's/INSERT_[^"]*/jigsaw-wheel/g' ./wheels/dataset-metadata.json
         cat ./wheels/dataset-metadata.json
       env:
         KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
@@ -76,7 +76,7 @@ jobs:
     - name: Push to Kaggle dataset
       run: |
         version=$(uv version --short)
-        if kaggle datasets status ${{ secrets.KAGGLE_USERNAME }}/jigsaw-wheels; then
+        if kaggle datasets status ${{ secrets.KAGGLE_USERNAME }}/jigsaw-wheel; then
           kaggle datasets version -m "Version $version : $(git log -1 --pretty=%s)" --path ./wheels
         else
           kaggle datasets create --path ./wheels
