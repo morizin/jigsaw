@@ -66,4 +66,9 @@ def get_data(training_config, config, preprocess=None):
     return test_data, valid_data, train_data
 
 
-__all__ = ["DataIngestionComponent", "get_data"]
+__all__ = [
+    "DataIngestionComponent",
+    "get_data",
+    "DataValidationComponent",
+    "DataTransformationComponent",
+]

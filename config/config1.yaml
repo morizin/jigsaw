@@ -10,6 +10,11 @@ data:
       type: competition
       name: jigsaw-agile-community-rules
 
+    syn:
+      source: kaggle
+      type: dataset
+      name: morizin/jigsaw-syn
+
   validation:
     statistics: true
     data-drift: 
@@ -17,17 +22,29 @@ data:
       n_iterations: 100
       dimension: 500
     report-name: "report"
+  
+  splitter: 
+    type: mlskfold # groupkfold, smlkf, stratifiedkfold
+    n_splits: 5
+    labels: 
+      - rule
+      - rule_violation
 
   zero-shot: true
+  triplet: 
+    anchor-column: rule
+    sample-column: body
+    n_negatives: 5
+    n_samples: 5
+    n_resample: 5
+    reversed: true
+
+  pairwise: false
+  cache-intermediate: false
 
 
 augmentations:
-  fraction: 1.0
-  n-resamples: 1
-  include-original: false
-  weight: 1.0
-  augments: 
-    - [url_to_semantics, 1.0]
+  - [url-to-semantics, 1.0]
 
 model-training:
   outdir: "models/"

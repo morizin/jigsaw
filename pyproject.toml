@@ -1,6 +1,6 @@
 [project]
 name = "jigsaw"
-version = "0.1.5"
+version = "0.1.20"
 description = "This is my codebase for Jigsaw competition."
 readme = "README.md"
 requires-python = ">=3.11"

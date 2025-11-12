@@ -8,6 +8,7 @@ from ..constants import (
 )
 from ..constants.data import INGESTED_DATA_FOLDER, REPORT_NAME, TRANSFORM_DIR_NAME
 from ..errors import DataNotFoundError, DirectoryNotFoundError, ConfigurationError
+from ..components.data.augmentation import Augmentor
 
 from ..core import (
     DataIngestionConfig,

@@ -1,24 +1,59 @@
-from typing import Callable
-from pydantic import BaseModel, field_validator, validate_call
+from typing import Callable, Collection
+from pydantic import BaseModel, field_validator, validate_call, model_validator
 import random
-from .augment_utils import *
+from .augment_utils import (
+    url_cleaner,
+    url_to_semantics,
+    RandomURL,
+    transileration,
+    sentence_jumbling,
+    random_sentence,
+    rule_flip,
+    TfidfAug,
+)
 import nlpaug.augmenter.char as nac
 import nlpaug.augmenter.word as naw
 import pandas as pd
 import inspect
 
+AUGMENT_DICT = {
+    "ocr": nac.OcrAug().augment,
+    "keystroke": nac.KeyboardAug().augment,
+    "random_char_substitute": nac.RandomCharAug(action="substitute").augment,
+    "random_char_insert": nac.RandomCharAug(action="insert").augment,
+    "random_char_swap": nac.RandomCharAug(action="swap").augment,
+    "random_char_delete": nac.RandomCharAug(action="delete").augment,
+    "spelling": naw.SpellingAug().augment,
+    "random_word_swap": naw.RandomWordAug(action="swap").augment,
+    "url_cleaner": url_cleaner,
+    "url_to_semantics": url_to_semantics,
+    "random_url": RandomURL,
+    "transileration": transileration,
+    "sentence_shuffle": sentence_jumbling,
+    "random_gen_sentence": random_sentence,
+    "rule_flip": rule_flip,
+    "tfidf": TfidfAug,
+}
+
 
 class Augment(BaseModel):
     augment: Callable
-    p: float
+    p: float = 1.0
 
     @field_validator("p", mode="before")
     @classmethod
-    @validate_call
     def probability(cls, v: float | int) -> float:
         if isinstance(v, int):
             v /= 100
         return v
+
+    @field_validator("augment", mode="before")
+    @classmethod
+    def get_augment(cls, augment_name: str) -> Callable:
+        if AUGMENT_DICT.get(augment_name, False):
+            return AUGMENT_DICT[augment_name]
+        else:
+            raise
 
     def apply(self, row):
         if random.random() < self.p:
@@ -34,56 +69,51 @@ class Augment(BaseModel):
         return row
 
 
-# Now we need to use
-def do_aug(data, config, tta=False):
-    print("Augmenting data...")
-    if tta:
-        aug_args = config["do_tta"]
-    else:
-        aug_args = config["do_aug"]
-    print(f"{aug_args = }")
-    p = aug_args[0] or 0.1
-    n = aug_args[1] or 2
-    append = aug_args[2] if (len(aug_args) > 2 and aug_args[2] is not None) else True
+class Augmentor(BaseModel):
+    augments: list[Augment]
+    is_tta: bool = False
+    frac: float = 0.1
+    resample: int = 2
+    include_original: bool = True
+    weight: float = 0.25
 
-    AUGMENTS = [
-        Augment(augment=nac.OcrAug().augment, p=p),
-        Augment(augment=nac.KeyboardAug().augment, p=p),
-        # Augment(augment = nac.RandomCharAug(action="substitute").augment, p = p),
-        Augment(augment=nac.RandomCharAug(action="insert").augment, p=p),
-        # Augment(augment = nac.RandomCharAug(action="swap").augment, p = p),
-        # Augment(augment = nac.RandomCharAug(action="delete").augment, p = p),
-        Augment(augment=naw.SpellingAug().augment, p=p),
-        Augment(augment=naw.RandomWordAug(action="swap").augment, p=p),
-        Augment(augment=naw.RandomWordAug(action="crop").augment, p=p),
-        # Augment(augment = naw.RandomWordAug(action="substitute").augment, p = p),
-        # Augment(augment = naw.RandomWordAug(action="delete").augment, p = p),
-        Augment(augment=url_cleaner, p=p),
-        Augment(augment=url_to_semantics, p=p),
-        Augment(augment=RandomURL(data), p=p),
-        Augment(augment=transileration, p=p),
-        Augment(augment=sentence_jumbling, p=p),
-        Augment(augment=random_sentence, p=p),
-        Augment(augment=rule_flip, p=p + 0.25),
-        Augment(augment=TfidfAug(data), p=p),
-    ]
+    @field_validator("augments", mode="before")
+    @classmethod
+    def get_augment(cls, augment_list: Collection[Collection]):
+        return [Augment(augment=aug_name, prob=prob) for aug_name, prob in augment_list]
 
-    augs = []
-    if append:
-        augs.append(data)
+    @field_validator("frac", mode="before")
+    @classmethod
+    def set_frac(cls, frac: float | int) -> float:
+        if isinstance(frac, int):
+            frac /= 100
+        return frac
 
-    aug_weight = (aug_args[3] if len(aug_args) > 3 else 0.25) / n
-    for _ in range(n):
-        temp = data.copy()
-        for aug in AUGMENTS:
-            temp = temp.apply(aug.apply, axis=1)
+    @model_validator(mode="after")
+    def set_weight(self) -> "Augmentor":
+        self.weight /= self.resample
+        return self
 
-        if tta and "weight" in data.columns:
-            temp["weight"] = aug_weight
-        augs.append((temp.sample(frac=p) if append else temp)[data.columns])
-    del AUGMENTS
-    return (
-        pd.concat(augs, axis=0)
-        .reset_index(drop=True)
-        .drop_duplicates(subset=["rule", "body"], ignore_index=True)
-    )
+    def augment(self, data):
+        augs = []
+        if self.include_original:
+            augs.append(data)
+
+        for _ in range(self.resample):
+            temp = data.copy()
+            for aug in self.augments:
+                temp = temp.apply(aug.apply, axis=1)
+
+            if self.is_tta and "weight" in data.columns:
+                temp["weight"] = self.weight
+
+            augs.append(
+                (temp.sample(frac=self.frac) if self.include_original else temp)[
+                    data.columns
+                ]
+            )
+        return (
+            pd.concat(augs, axis=0)
+            .reset_index(drop=True)
+            .drop_duplicates(subset=["rule", "body"], ignore_index=True)
+        )

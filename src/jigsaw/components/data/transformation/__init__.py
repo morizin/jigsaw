@@ -15,8 +15,8 @@ import pandas as pd
 PIPELINES = {
     "cleaned": remove_duplicates,
     "zero_shot": zero_shot_transform,
-    "triplet": triplet_dataset,
     "splitter": split_dataset,
+    "triplet": triplet_dataset,
 }
 
 
