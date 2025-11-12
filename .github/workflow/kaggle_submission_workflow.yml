@@ -2,8 +2,7 @@ name: Kaggle Submission Workflow
 
 on:
   push: 
-    branches:
-      - main
+    branches: [ "main" ]
     
 
 jobs:
