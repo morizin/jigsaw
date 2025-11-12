@@ -3,7 +3,7 @@ name: Kaggle Submission Workflow
 on:
   push: 
     branches: [ "main" ]
-  paths-ignore: [ "README.md" ]
+    paths-ignore: [ "README.md" ]
 
 jobs:     
   build:
