@@ -32,6 +32,9 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
     steps:
     - name: Checking out Code
       uses: actions/checkout@v4
@@ -44,7 +47,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install uv
         pip install kaggle
-    - name: Building the code and publish it to Kaggle
+    - name: Building the code and publish it to Kaggle ${{ matrix.python-version }}
       run: ./publish_kaggle.sh <<< ${{ github.event.head_commit.message }}
       env:
         KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
