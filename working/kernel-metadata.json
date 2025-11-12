@@ -1,0 +1,19 @@
+{
+  "id": "morizin/jigsaw-0.0.1",
+  "title": "jigsaw-0.0.1",
+  "code_file": "training.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "false",
+  "enable_tpu": "false",
+  "enable_internet": "false",
+  "dataset_sources": [
+    "morizin/jigsaw"
+  ],
+  "competition_sources": [
+    "jigsaw-agile-community-rules"
+  ],
+  "kernel_sources": [],
+  "model_sources": []
+}

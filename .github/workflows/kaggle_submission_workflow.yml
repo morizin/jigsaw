@@ -23,12 +23,11 @@ jobs:
 
     - name: Analysing the code with pylint
       run: echo "Linting the Code"
-    # - name: Install dependencies
-    #   run: |
-    #     python -m pip install --upgrade pip
-    #     pip install uv
-    #     pip install pylint
-    #     uv sync
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip3 download -r requirements.txt
     # - name: Analysing the code with pylint
     #   run: |
     #     pylint $(git ls-files '*.py')
@@ -54,7 +53,7 @@ jobs:
         pip install kaggle
 
     - name: Building the code and publish it to Kaggle ${{ matrix.python-version }}
-      run: ./publish_kaggle.sh <<< $(git log -1 --pretty=%s)
+      run: ./script/publish_kaggle.sh <<< $(git log -1 --pretty=%s)
       env:
         KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
         KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
