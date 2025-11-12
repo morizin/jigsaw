@@ -5,36 +5,8 @@ on:
     branches: [ "main" ]
     
 
-jobs:
-  linting:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11"]
-        
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Analysing the code with pylint
-      run: echo "Linting the Code"
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        mkdir ./wheels
-        pip3 download -r requirements.txt -d ./wheels
-        ls ./wheels
-    # - name: Analysing the code with pylint
-    #   run: |
-    #     pylint $(git ls-files '*.py')
-
-  build:
+jobs:     
+  build-and-upload:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -59,3 +31,24 @@ jobs:
       env:
         KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
         KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+
+    
+    - name: Export uv project to requirements.txt
+      run: uv export --format requirements.txt -o requirements.txt
+
+    - name: Initialize Kaggle Datasets
+      run: | 
+        mkdir ./wheels
+        kaggle datasets init --path ./wheels
+
+    - name: Export Wheels into the folder
+      run: pip3 download -r requirements.txt -d ./wheels
+
+    - name: Push to Kaggle dataset
+      run: |
+        version=$(uv version --short)
+        if kaggle datasets status ${{ secrets.KAGGLE_USERNAME }}/jigsaw_wheels; then
+          kaggle datasets version -m "Version $version : $(git log -1 --pretty=%s)" --path ./wheels
+        else
+          kaggle datasets create --path ./wheels
+        fi
