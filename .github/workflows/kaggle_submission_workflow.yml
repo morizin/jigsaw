@@ -34,7 +34,7 @@ jobs:
         KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
 
   download-wheels:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build
     strategy:
       matrix:
