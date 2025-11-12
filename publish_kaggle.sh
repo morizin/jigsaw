@@ -16,5 +16,9 @@ if [ $? -eq 0 ]; then
 
     if [ $? -eq 0 ]; then
         echo "The command was successful"
+    else
+        exit 1
     fi
+    exit 0
 fi
+exit 1
