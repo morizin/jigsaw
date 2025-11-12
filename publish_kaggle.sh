@@ -1,25 +1,22 @@
 #!/bin/bash
 
+set -ex
+
 echo "The PID of publishing into kaggle is $$"
 rm -rf ./dist/jigsaw-0.*
 uv version --bump patch 
 version=$(uv version --short)
 uv build
+
 if [ ! -f "./dist/dataset-metadata.json" ]; then
     kaggle datasets init -p ./dist/
-    sed -i "" 's/INSERT_[A-Z_]*/jigsaw/g' ./dist/dataset-metadata.json
-fi
-
-if [ $? -eq 0 ]; then
-    read -p "Enter Version ($version) Message : " message
-    echo "$message"
-    kaggle datasets version -m "Version $version : $message" -p ./dist
-
-    if [ $? -eq 0 ]; then
-        echo "The command was successful"
+    if [[ "$(uname)" == "Darwin" ]]; then
+        sed -i "" 's/INSERT_[A-Z_]*/jigsaw/g' ./dist/dataset-metadata.json
     else
-        exit 1
+        sed -i 's/INSERT_[A-Z_]*/jigsaw/g' ./dist/dataset-metadata.json
     fi
-    exit 0
 fi
-exit 1
+
+read -p "Enter Version ($version) Message : " message
+message="${message// /_}"
+kaggle datasets version -m "Version $version : $message" -p ./dist
