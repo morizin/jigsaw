@@ -1,4 +1,4 @@
-name: kaggle_submission_workflow
+name: Kaggle Submission Workflow
 
 on:
   push: 
