@@ -7,6 +7,7 @@ rm -rf ./dist/jigsaw-0.*
 uv version --bump patch 
 version=$(uv version --short)
 uv build
+uv export --format requirements.txt -o ./dist/requirements.txt
 
 if [ ! -f "./dist/dataset-metadata.json" ]; then
     kaggle datasets init -p ./dist/

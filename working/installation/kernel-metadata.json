@@ -1,0 +1,19 @@
+{
+  "id": "morizin/jigsaw-wheels",
+  "title": "Jigsaw Wheels",
+  "code_file": "jigsaw_installation.ipynb",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "false",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [
+    "morizin/jigsaw"
+  ],
+  "competition_sources": [
+    "jigsaw-agile-community-rules"
+  ],
+  "kernel_sources": [],
+  "model_sources": []
+}

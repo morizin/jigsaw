@@ -31,31 +31,3 @@ jobs:
       env:
         KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
         KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-
-    
-    - name: Export uv project to requirements.txt
-      run: uv export --format requirements.txt -o requirements.txt
-
-    - name: Initialize Kaggle Datasets
-      run: | 
-        mkdir ./wheels
-        cp requirements.txt ./wheels/
-        kaggle datasets init --path ./wheels
-      env:
-        KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-        KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-
-    - name: Export Wheels into the folder
-      run: pip3 download -r requirements.txt -d ./wheels
-
-    - name: Push to Kaggle dataset
-      run: |
-        version=$(uv version --short)
-        if kaggle datasets status ${{ secrets.KAGGLE_USERNAME }}/jigsaw_wheels; then
-          kaggle datasets version -m "Version $version : $(git log -1 --pretty=%s)" --path ./wheels
-        else
-          kaggle datasets create --path ./wheels
-        fi
-      env:
-        KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-        KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
