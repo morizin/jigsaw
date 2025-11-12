@@ -1,7 +1,7 @@
 {
   "id": "morizin/jigsaw-wheels",
   "title": "Jigsaw Wheels",
-  "code_file": "jigsaw_installation.ipynb",
+  "code_file": "install.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": "true",
