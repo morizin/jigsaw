@@ -34,6 +34,7 @@ jobs:
       env:
         KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
         KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        VERBOSITY: "1"
 
   download-wheels:
     runs-on: ubuntu-latest
