@@ -28,7 +28,9 @@ jobs:
         pip3 install kaggle
 
     - name: Building the code and publish it to Kaggle ${{ matrix.python-version }}
-      run: ./scripts/publish_kaggle.sh <<< $(git log -1 --pretty=%s)
+      run: |
+        ./scripts/publish_kaggle.sh <<< $(git log -1 --pretty=%s)
+        uv run main.py
       env:
         KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
         KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}

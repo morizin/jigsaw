@@ -42,12 +42,6 @@ class DataValidationComponent(Component):
             self.find_missing_rows,
         ]
         if self.config.statistics:
-            from .text import (
-                get_statistics as text_statistics,
-                generate_word_cloud,
-                detect_data_drift,
-            )
-
             self.pipeline.append(self.get_statistics)
 
         self.validation_status = True
@@ -274,6 +268,12 @@ class DataValidationComponent(Component):
         train=True,
         **kwargs,
     ):
+        from .text import (
+            get_statistics as text_statistics,
+            generate_word_cloud,
+            detect_data_drift,
+        )
+
         try:
             # data = load_csv(path=self.config.indir / name / file)
             statistics: dict[str, str | dict[str, int | float]] = dict()
