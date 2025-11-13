@@ -1,5 +1,5 @@
 from typing import Callable, Collection
-from pydantic import BaseModel, field_validator, validate_call, model_validator
+from pydantic import BaseModel, field_validator, model_validator
 import random
 from .augment_utils import (
     url_cleaner,
@@ -9,22 +9,23 @@ from .augment_utils import (
     sentence_jumbling,
     random_sentence,
     rule_flip,
-    TfidfAug,
+    # TfidfAug,
 )
-import nlpaug.augmenter.char as nac
-import nlpaug.augmenter.word as naw
+
+# import nlpaug.augmenter.char as nac
+# import nlpaug.augmenter.word as naw
 import pandas as pd
 import inspect
 
 AUGMENT_DICT = {
-    "ocr": nac.OcrAug().augment,
-    "keystroke": nac.KeyboardAug().augment,
-    "random_char_substitute": nac.RandomCharAug(action="substitute").augment,
-    "random_char_insert": nac.RandomCharAug(action="insert").augment,
-    "random_char_swap": nac.RandomCharAug(action="swap").augment,
-    "random_char_delete": nac.RandomCharAug(action="delete").augment,
-    "spelling": naw.SpellingAug().augment,
-    "random_word_swap": naw.RandomWordAug(action="swap").augment,
+    # "ocr": nac.OcrAug().augment,
+    # "keystroke": nac.KeyboardAug().augment,
+    # "random_char_substitute": nac.RandomCharAug(action="substitute").augment,
+    # "random_char_insert": nac.RandomCharAug(action="insert").augment,
+    # "random_char_swap": nac.RandomCharAug(action="swap").augment,
+    # "random_char_delete": nac.RandomCharAug(action="delete").augment,
+    # "spelling": naw.SpellingAug().augment,
+    # "random_word_swap": naw.RandomWordAug(action="swap").augment,
     "url_cleaner": url_cleaner,
     "url_to_semantics": url_to_semantics,
     "random_url": RandomURL,
@@ -32,7 +33,7 @@ AUGMENT_DICT = {
     "sentence_shuffle": sentence_jumbling,
     "random_gen_sentence": random_sentence,
     "rule_flip": rule_flip,
-    "tfidf": TfidfAug,
+    # "tfidf": TfidfAug,
 }
 
 

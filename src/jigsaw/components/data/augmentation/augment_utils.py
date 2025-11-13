@@ -1,29 +1,30 @@
 import re
 from urllib.parse import urlparse
+from .... import logger
 import random
 import itertools
 import pronouncing
 import numpy as np
-import nlpaug.augmenter.word as naw
-import nlpaug.model.word_stats as nmw
+# import nlpaug.augmenter.word as naw
+# import nlpaug.model.word_stats as nmw
 
 
-class TfidfAug:
-    def __init__(self, data, label=0):
-        self.label = label
-        train_x_tokens = [self._tokenizer(x) for x in data.body]
-        tfidf_model = nmw.TfIdf()
-        tfidf_model.train(train_x_tokens)
-        tfidf_model.save(".")
-        self.aug = naw.TfIdfAug(model_path=".", tokenizer=self._tokenizer)
+# class TfidfAug:
+#     def __init__(self, data, label=0):
+#         self.label = label
+#         train_x_tokens = [self._tokenizer(x) for x in data.body]
+#         tfidf_model = nmw.TfIdf()
+#         tfidf_model.train(train_x_tokens)
+#         tfidf_model.save(".")
+#         self.aug = naw.TfIdfAug(model_path=".", tokenizer=self._tokenizer)
 
-    def _tokenizer(self, text, token_pattern=r"(?u)\b\w\w+\b"):
-        token_pattern = re.compile(token_pattern)
-        return token_pattern.findall(text)
+#     def _tokenizer(self, text, token_pattern=r"(?u)\b\w\w+\b"):
+#         token_pattern = re.compile(token_pattern)
+#         return token_pattern.findall(text)
 
-    def __call__(self, row):
-        row.body = self.aug.augment(row.body)[0]
-        return row
+#     def __call__(self, row):
+#         row.body = self.aug.augment(row.body)[0]
+#         return row
 
 
 def sentence_jumbling(row):
@@ -66,7 +67,8 @@ def url_cleaner(row):
                 return f"<url>: ({domain}/{important_path})"
             else:
                 return f"<url>: ({domain})"
-        except:
+        except Exception as e:
+            logger.error(e)
             return "<url>: (unknown)"
 
     row.body = re.sub(url_pattern, replace_url, str(text))
@@ -122,8 +124,9 @@ class RandomURL:
             row.body += " " + " ".join(
                 random.sample(self.urls_bank, random.randint(1, 5))
             )
-        except:
-            print(row.index)
+        except Exception as e:
+            logger.error(f"{e} {row.index}")
+
         return row
 
 
@@ -138,8 +141,8 @@ def transileration(row):
                 text[idx] = re.sub(
                     r"[\s\d]", "", pronouncing.phones_for_word(text[idx])[0]
                 ).lower()
-            except:
-                pass
+            except Exception as e:
+                logger.error(e)
 
     row.body = " ".join(text)
     return row

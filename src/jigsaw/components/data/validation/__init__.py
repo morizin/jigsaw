@@ -270,7 +270,7 @@ class DataValidationComponent(Component):
     ):
         from .text import (
             get_statistics as text_statistics,
-            generate_word_cloud,
+            # generate_word_cloud,
             detect_data_drift,
         )
 
@@ -319,12 +319,12 @@ class DataValidationComponent(Component):
                         column=column,
                         path=self.report_img // name // file,
                     )
-                    statistics[column]["word_cloud"] = generate_word_cloud(
-                        data=data,
-                        column=column,
-                        path=self.report_img // name // file,
-                        seed=int(os.environ["PYTHONHASHSEED"]),
-                    )
+                    # statistics[column]["word_cloud"] = generate_word_cloud(
+                    #     data=data,
+                    #     column=column,
+                    #     path=self.report_img // name // file,
+                    #     seed=int(os.environ["PYTHONHASHSEED"]),
+                    # )
                     if self.config.data_drift:
                         if train:
                             statistics[column]["data_drift"] = detect_data_drift(
