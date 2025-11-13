@@ -8,7 +8,7 @@ uv version --bump patch
 version=$(uv version --short)
 uv sync
 uv build
-uv export --format requirements.txt -o ./dist/requirements.txt
+uv export --format requirements.txt -o ./dist/requirements.txt --no-hashes
 
 if [ ! -f "./dist/dataset-metadata.json" ]; then
     kaggle datasets init -p ./dist/

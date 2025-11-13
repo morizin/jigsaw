@@ -61,7 +61,7 @@ jobs:
         pip3 install kaggle
 
     - name: Export uv project to requirements.txt
-      run: uv export --format requirements.txt -o requirements.txt
+      run: uv export --format requirements.txt -o requirements.txt --no-hashes
 
     - name: Initialize Kaggle Datasets
       run: | 
