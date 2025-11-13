@@ -44,7 +44,7 @@ class DataIngestionComponent(Component):
 
             elif datasource.source.lower().strip() == "kaggle":
                 if datasource.type.lower().strip() == "competition":
-                    path = kagglehub.competition_download(datasource.name)
+                    path = kagglehub.competition_download(datasource.uri)
                     logger.info(
                         f"Downloading {datasource.uri} competition dataset to {str(target_path.path)}"
                     )

@@ -8,10 +8,10 @@ data:
     competition:
       source: kaggle
       type: competition
-      uri: jigsaw-agile-community-rule
+      uri: jigsaw-agile-community-rules
 
   validation:
-    statistics: true
+    statistics: false
     data-drift: 
       n_splits: 20
       n_iterations: 100
