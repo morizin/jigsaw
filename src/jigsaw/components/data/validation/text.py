@@ -47,6 +47,7 @@ def get_statistics(
     ax2.set_xlabel("Value")
     ax2.set_ylabel("Density")
     fig2.savefig(path // "light" / stat["word_length"]["histogram"])
+    plt.close()
 
     with plt.style.context("dark_background"):
         fig1, ax1 = plt.subplots(figsize=(7, 5))
@@ -55,6 +56,7 @@ def get_statistics(
         ax1.set_xlabel("Value")
         ax1.set_ylabel("Density")
         fig1.savefig(path // "dark" / stat["word_length"]["histogram"])
+        plt.close()
 
     length = list(map(len, data))
     stat["char_length"] = {
@@ -79,6 +81,7 @@ def get_statistics(
     ax3.set_xlabel("Value")
     ax3.set_ylabel("Density")
     fig3.savefig(path // "light" / stat["char_length"]["histogram"])
+    plt.close()
 
     with plt.style.context("dark_background"):
         fig4, ax4 = plt.subplots(figsize=(7, 5))
@@ -87,6 +90,7 @@ def get_statistics(
         ax4.set_xlabel("Value")
         ax4.set_ylabel("Density")
         fig4.savefig(path // "dark" / stat["char_length"]["histogram"])
+        plt.close()
 
     # Now we need unique vocabs in column
     words: list[str] = []
