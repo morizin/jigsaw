@@ -71,7 +71,7 @@ jobs:
         KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
 
     - name: Export Wheels into the folder
-      run: pip3 download -r requirements.txt -d ./wheels
+      run: pip3 wheel -r requirements.txt -w ./wheels
 
     - name: Push to Kaggle dataset
       run: |
