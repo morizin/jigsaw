@@ -46,11 +46,11 @@ def get_hw_details():
             ).decode()
         case "Linux":
             n_procs = subprocess.check_output(
-                'lscpu | grep -P ^Thread\(s\) per core\:.*(\d+).* | grep -oE "\d+"',
+                "lscpu | grep -Po '^Thread\(s\) per core:\s*\K\d+'",
                 shell=True,
             ).decode()
             n_threads = subprocess.check_output(
-                'lscpu | grep -P ^Core\(s\) per socket\:.*(\d+).* | grep -oE "\d+"',
+                "lscpu | grep -Po '^Core\(s\) per socket:\s*\K\d+'",
                 shell=True,
             ).decode()
         case _:
