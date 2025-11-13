@@ -6,6 +6,7 @@ echo "The PID of publishing into kaggle is $$"
 rm -rf ./dist/jigsaw-0.*
 uv version --bump patch 
 version=$(uv version --short)
+uv sync
 uv build
 uv export --format requirements.txt -o ./dist/requirements.txt
 
