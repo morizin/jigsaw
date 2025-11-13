@@ -38,3 +38,6 @@ dependencies = [
     "wordcloud>=1.9.4",
 ]
 
+[tool.uv.sources]
+nlpaug = { git = "https://github.com/makcedward/nlpaug.git" }
+
