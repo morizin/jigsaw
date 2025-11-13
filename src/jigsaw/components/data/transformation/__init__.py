@@ -84,17 +84,20 @@ class DataTransformationComponent:
                 save_csv(data, self.config.outdir // f"{self.final_dir}_{name}" / path)
                 test_data.append(data)
 
-        train_data = pd.concat(train_data, axis=0).reset_index(drop=True)
-        save_csv(
-            train_data,
-            self.config.outdir // f"{self.final_dir}_combined" / "train.csv",
-        )
+        if train_data:
+            train_data = pd.concat(train_data, axis=0).reset_index(drop=True)
+            save_csv(
+                train_data,
+                self.config.outdir // f"{self.final_dir}_combined" / "train.csv",
+            )
 
-        test_data = pd.concat(test_data, axis=0).reset_index(drop=True)
-        save_csv(
-            test_data,
-            self.config.outdir // f"{self.final_dir}_combined" / "test.csv",
-        )
+        if test_data:
+            test_data = pd.concat(test_data, axis=0).reset_index(drop=True)
+            save_csv(
+                test_data,
+                self.config.outdir // f"{self.final_dir}_combined" / "test.csv",
+            )
+
         return DataTransformationArtifact(
             combined_train_file=self.config.outdir
             / f"{self.final_dir}_combined"

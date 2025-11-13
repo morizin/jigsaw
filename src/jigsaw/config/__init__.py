@@ -56,7 +56,7 @@ class ConfigurationManager:
         sources = self.config.data.sources
 
         sources: dict[str, DataSource] = {
-            name: DataSource(source=config.source, type=config.type, name=config.name)
+            name: DataSource(source=config.source, type=config.type, uri=config.uri)
             for name, config in sources.items()
             if isinstance(config, ConfigBox)
         }

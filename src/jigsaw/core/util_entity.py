@@ -52,7 +52,7 @@ class DataSchema(BaseModel):
 class DataSource(BaseModel):
     source: str
     type: str
-    name: str
+    uri: str
 
 
 class DataDriftConfig(BaseModel):

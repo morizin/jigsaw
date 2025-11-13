@@ -6,9 +6,9 @@ debug: true
 data:
   sources:
     competition:
-      source: kaggle
-      type: competition
-      name: jigsaw-agile-community-rules
+      source: local
+      type: dir
+      uri: ./artifact/11_13_2025_07_13_50/data/raw_data/competition/
 
   validation:
     statistics: true

@@ -1,8 +1,3 @@
-from .text import (
-    get_statistics as text_statistics,
-    generate_word_cloud,
-    detect_data_drift,
-)
 from pandas.api.types import is_object_dtype, is_integer_dtype, is_string_dtype
 from ....constants.data import (
     VALID_PREFIX,
@@ -45,8 +40,15 @@ class DataValidationComponent(Component):
             self.find_mismatch_dtype,
             self.find_data_redundancy,
             self.find_missing_rows,
-            self.get_statistics,
         ]
+        if self.config.statistics:
+            from .text import (
+                get_statistics as text_statistics,
+                generate_word_cloud,
+                detect_data_drift,
+            )
+
+            self.pipeline.append(self.get_statistics)
 
         self.validation_status = True
         self.valid_outdir = (

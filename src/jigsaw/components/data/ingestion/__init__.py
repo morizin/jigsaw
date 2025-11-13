@@ -6,6 +6,7 @@ from ... import Component
 from .... import logger
 import subprocess
 import kagglehub
+import shutil
 
 
 class DataIngestionComponent(Component):
@@ -29,18 +30,29 @@ class DataIngestionComponent(Component):
     def __call__(self) -> DataIngestionArtifact:
         names: list[str] = []
         for name, datasource in self.config.sources.items():
-            if datasource.source.lower().strip() == "kaggle":
-                target_path = self.config.outdir // name
+            target_path = self.config.outdir // name
+            if datasource.source.lower().strip() == "local":
+                if datasource.type.lower().strip() == "dir":
+                    return_code = shutil.copytree(
+                        datasource.uri, str(target_path), dirs_exist_ok=True
+                    )
+                elif datasource.type.lower().strip() == "file":
+                    return_code = shutil.copy(datasource.uri, str(target_path))
+
+                if return_code:
+                    names.append(name)
+
+            elif datasource.source.lower().strip() == "kaggle":
                 if datasource.type.lower().strip() == "competition":
                     path = kagglehub.competition_download(datasource.name)
                     logger.info(
-                        f"Downloading {datasource.name} competition dataset to {str(target_path.path)}"
+                        f"Downloading {datasource.uri} competition dataset to {str(target_path.path)}"
                     )
 
                 elif datasource.type.lower().strip() == "dataset":
-                    path = kagglehub.dataset_download(datasource.name)
+                    path = kagglehub.dataset_download(datasource.uri)
                     logger.info(
-                        f"Downloading {datasource.name} kaggle dataset to {str(target_path.path)}"
+                        f"Downloading {datasource.uri} kaggle dataset to {str(target_path.path)}"
                     )
 
                 else:
