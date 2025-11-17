@@ -33,6 +33,7 @@ class DataTransformationConfig(BaseModel):
     indir: Directory
     schemas: dict[str, DataSchema]
     zero_shot: bool
+    augmentations: bool
     pairwise: bool
     splitter: DataSplitConfig | bool
     triplet: TripletDataConfig | bool
@@ -44,7 +45,7 @@ class ModelTrainingConfig(BaseModel):
     outdir: Directory | FilePath
     type: Literal["text-classification", "triplet", "completion"]
     model: FilePath
-    augmentations: Optional[bool] = False
+    transformation: DataTransformationConfig
     dataloader_pin_memory: bool = False
     seed: int
     optimizer: str

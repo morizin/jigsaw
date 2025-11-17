@@ -1,5 +1,5 @@
 from .data.augmentation import Augmentor
-from ..utils.common import load_csv
+from ..utils.common import load_csv, load_json
 import torch
 
 from transformers import (
@@ -17,10 +17,12 @@ from ..core import (
     ModelTrainingConfig,
     ModelTrainingArtifact,
     ClassificationMetric,
+    DataTransformationArtifact,
 )
 
+from .data.transformation import DataTransformationComponent
+
 from transformers.utils import is_torch_bf16_gpu_available
-from jigsaw.utils.common import load_json
 from sklearn.metrics import roc_auc_score, accuracy_score
 import mlflow
 from scipy.special import softmax as softmax_scipy
@@ -33,13 +35,19 @@ class ModelTrainingComponent:
             config = ModelTrainingConfig(**load_json(config))
 
         self.config = config
+        self.transform_config = config.transformation
+        self.transform_artifact: DataTransformationArtifact = (
+            DataTransformationComponent(self.transform_config)()
+        )
         self.exp_name = f"{PROJECT_NAME}_{config.name.replace('/', '_')}"
 
     def get_dataset(self, valid=False):
         data = load_csv(
-            self.config.valid_file_path if valid else self.config.train_file_path
+            self.transform_artifact.valid_file_path
+            if valid
+            else self.transform_artifact.train_file_path
         )
-        if self.config.augmentations:
+        if self.transform_config.augmentations:
             augs = Augmentor(
                 augments=[["url_to_semantics", 1.0]],
                 frac=1.0,
@@ -128,7 +136,9 @@ class ModelTrainingComponent:
             mlflow.log_metrics(metrics.model_dump())
 
         return ModelTrainingArtifact(
-            name=self.config.name, model_path=self.config.outdir, metrics=metrics
+            name=self.config.name,
+            model_path=self.config.outdir,
+            metrics=ClassificationMetric(roc_auc=0.5, accuracy=0.5),
         )
 
     def train(self):

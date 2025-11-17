@@ -8,7 +8,7 @@ data:
     competition:
       source: kaggle
       type: competition
-      uri: jigsaw-agile-community-rules
+      uri: "jigsaw-agile-community-rules"
 
   validation:
     statistics: false
@@ -18,9 +18,22 @@ data:
       dimension: 500
     report-name: "report"
 
-  zero-shot: true
 
-
+fold: -1
+n-epochs: 1
+valid-batch-size: 8
+inference-batch-size: 8
+learning-rate: 2e-4
+warmup-ratio: 0.1
+weight-decay: 0.01
+max-grad-norm: 1.0
+logging-steps: 10
+gradient-checkpointing: true
+dataloader-pin-memory: true
+scheduler-type: "cosine"
+save-strategy: "no"
+max-length: 256
+optimizer: "paged_adamw_8bit"
 augmentations:
   fraction: 1.0
   n-resamples: 1
@@ -29,21 +42,29 @@ augmentations:
   augments: 
     - [url_to_semantics, 1.0]
 
-model-training:
-  outdir: "models/"
-  fold: -1
-  engine: "classifier"
-  few-shot: false
+models:
+    deberta1:
+        type: "text-classification"
+        model: "/kaggle/input/huggingfacedebertav3variants/deberta-v3-base"
+        transforms:
+          zero-shot: true
+          augmentations: true
+        train-batch-size: 32
+        n-epochs: 0.1
+        learning-rate: 2e-5
+        gradient-accumulation-steps: 1
+        padding: 'longest'
+        optimizer: "adamw_torch_fused"
 
-classifier:
-  model-name: "/kaggle/input/notebook2cf3dd53b0/artifacts/models/checkpoint-108"
-  nepochs: 1
-  learning-rate: !!float 2e-4
-  train-batch-size: 4
-  gradient-accumulation-steps: 1
-  weight-decay: 0.01
-  warmup-ratio: 0.03
-  tokenizer:
-    max-length: 2048
-    truncation: true
-    padding: 'longest'
+
+    deberta2:
+        type: "text-classification"
+        model: "/kaggle/input/huggingfacedebertav3variants/deberta-v3-base"
+        transforms:
+          augmentations: true
+        train-batch-size: 32
+        n-epochs: 0.1
+        learning-rate: 2e-5
+        gradient-accumulation-steps: 1
+        padding: 'longest'
+        optimizer: "adamw_torch_fused"

@@ -27,22 +27,21 @@ class DataTransformationComponent:
         self.schemas = config.schemas
 
         length = min(LENGTH, max(list(map(len, self.schemas.keys())))) + 15
-        print("=" * length)
-        print("|", "Datasets Available".center(length - 4), "|")
-        print("=" * length)
-        for name in self.schemas:
-            print("|", name.center(length - 4), "|")
-        print("=" * length)
+        # print("=" * length)
+        # print("|", "Datasets Available".center(length - 4), "|")
+        # print("=" * length)
+        # for name in self.schemas:
+        #     print("|", name.center(length - 4), "|")
+        # print("=" * length)
 
         self.pipelines = [PIPELINES["cleaned"]]
-        final_dir = []
+        final_dir = ["cleaned"]
         for name, process in PIPELINES.items():
             if getattr(self.config, name, False):
                 self.pipelines.append(process)
                 final_dir.append(name)
 
         self.final_dir = "_".join(final_dir)
-
         length = (
             min(LENGTH, max(list(map(len, self.schemas.keys()))))
             + 15
@@ -99,10 +98,13 @@ class DataTransformationComponent:
             )
 
         return DataTransformationArtifact(
-            combined_train_file=self.config.outdir
+            train_file_path=self.config.outdir
             / f"{self.final_dir}_combined"
             / "train.csv",
-            combined_test_file=self.config.outdir
+            valid_file_path=self.config.outdir
+            / f"{self.final_dir}_combined"
+            / "valid.csv",
+            test_file_path=self.config.outdir
             / f"{self.final_dir}_combined"
             / "test.csv",
             transformed_outdir=self.config.outdir,

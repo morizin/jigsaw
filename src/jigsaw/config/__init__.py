@@ -9,6 +9,7 @@ from ..constants import (
 from ..constants.data import INGESTED_DATA_FOLDER, REPORT_NAME, TRANSFORM_DIR_NAME
 from ..errors import DataNotFoundError, DirectoryNotFoundError, ConfigurationError
 from ..components.data.augmentation import Augmentor
+from typing import Iterator
 
 from ..core import (
     FilePath,
@@ -133,16 +134,17 @@ class ConfigurationManager:
 
     @typechecked
     def get_data_transformation_config(
-        self, data_validation_artifact: DataValidationArtifact
+        self,
+        data_validation_artifact: DataValidationArtifact,
+        transform_config: ConfigBox,
     ) -> DataTransformationConfig:
-        data_transform = self.config.data
         splitter = False
-        if data_transform.get("splitter", None):
+        if transform_config.get("splitter", None):
             try:
                 splitter = DataSplitConfig(
-                    type=data_transform.splitter.type,
-                    n_splits=data_transform.splitter.n_splits,
-                    labels=data_transform.splitter.get("labels", None),
+                    type=transform_config.splitter.type,
+                    n_splits=transform_config.splitter.n_splits,
+                    labels=transform_config.splitter.get("labels", None),
                 )
             except Exception as e:
                 e = ConfigurationError(message=e)
@@ -150,14 +152,14 @@ class ConfigurationManager:
                 raise e
 
         triplet_config = False
-        if data_transform.get("triplet", None):
+        if transform_config.get("triplet", None):
             try:
                 triplet_config = TripletDataConfig(
-                    anchor_col=data_transform.triplet.anchor_column,
-                    sample_col=data_transform.triplet.sample_column,
-                    n_negatives=data_transform.triplet.n_negatives,
-                    n_samples=data_transform.triplet.n_samples,
-                    reversed=data_transform.triplet.get("reversed", False),
+                    anchor_col=transform_config.triplet.anchor_column,
+                    sample_col=transform_config.triplet.sample_column,
+                    n_negatives=transform_config.triplet.n_negatives,
+                    n_samples=transform_config.triplet.n_samples,
+                    reversed=transform_config.triplet.get("reversed", False),
                 )
             except Exception as e:
                 e = ConfigurationError(message=e)
@@ -170,52 +172,30 @@ class ConfigurationManager:
             schemas=data_validation_artifact.schemas,
             splitter=splitter,
             triplet=triplet_config,
-            pairwise=data_transform.get("pairwise", False),
-            zero_shot=data_transform.get("zero-shot", False),
-            cache_intermediate=data_transform.get("cache-intermediate", False),
+            pairwise=transform_config.get("pairwise", False),
+            zero_shot=transform_config.get("zero-shot", False),
+            augmentations=transform_config.get("augmentations", False),
+            cache_intermediate=transform_config.get("cache-intermediate", False),
         )
 
     @typechecked
-    def get_model_inference_config(
-        self, model_training_artifact: MultiModelTrainingArtifact
-    ) -> MultiModelInferenceConfig:
-        target_dir = self.artifact_root // "inference"
-        model_configs = dict()
-        for model_name, model_config in self.config.models.items():
-            inference_params = ModelInferenceConfig(
-                name=model_name,
-                outdir=target_dir // model_name,
-                type=model_config.type,
-                model_path=model_config.model,
-                batch_size=model_config.get("inference-batch-size")
-                or self.config.get("inference-batch-size")
-                or 8,
-                train_path=model_training_artifact.models[model_name].model_path,
-                max_length=model_config.get("max-lenght")
-                or self.config.get("max-length")
-                or 256,
-                tta=False,
-                ensmeble_weight=1,
-            )
-            json_path = inference_params.outdir / "inference_params.json"
-            save_json(inference_params.model_dump(mode="json"), json_path)
-            model_configs[model_name] = json_path
-
-        return MultiModelInferenceConfig(outdir=target_dir, models=model_configs)
-
-    @typechecked
     def get_model_training_config(
-        self, data_transformation_artifact: DataTransformationArtifact
-    ) -> MultiModelTrainingConfig:
+        self, data_validation_artifact: DataValidationArtifact
+    ) -> MultiModelTrainingConfig | Iterator[ModelTrainingConfig]:
         target_dir = self.artifact_root // MODELS_DIRECTORY_NAME
         model_configs = dict()
         for model_name, model_config in self.config.models.items():
+            transformation = self.get_data_transformation_config(
+                data_validation_artifact=data_validation_artifact,
+                transform_config=model_config.transforms,
+            )
+
             training_params = ModelTrainingConfig(
                 name=model_name,
                 outdir=target_dir // model_name,
                 type=model_config.type,
                 model=model_config.model,
-                augmentations=model_config.get("augmentations", False),
+                transformation=transformation,
                 dataloader_pin_memory=model_config.get(
                     "dataloader-pin-memory",
                     self.config.get("dataloader-pin-memory", False),
@@ -242,11 +222,11 @@ class ConfigurationManager:
                     "gradient-checkpointing",
                     self.config.get("gradient-checkpointing", False),
                 ),
-                train_file_path=data_transformation_artifact.combined_train_file,
+                train_file_path=transformation.outdir / "train.py",
                 train_batch_size=model_config.get(
                     "train-batch-size", self.config.get("train-batch-size", None)
                 ),
-                valid_file_path=data_transformation_artifact.combined_test_file,
+                valid_file_path=None,
                 valid_batch_size=model_config.get(
                     "valid-batch-size", self.config.get("valid-batch-size", None)
                 ),
@@ -294,6 +274,35 @@ class ConfigurationManager:
 
             json_path = training_params.outdir / "training_params.json"
             save_json(training_params.model_dump(mode="json"), json_path)
+            yield model_name, json_path
             model_configs[model_name] = json_path
 
         return MultiModelTrainingConfig(outdir=target_dir, models=model_configs)
+
+    @typechecked
+    def get_model_inference_config(
+        self, model_training_artifact: MultiModelTrainingArtifact
+    ) -> MultiModelInferenceConfig:
+        target_dir = self.artifact_root // "inference"
+        model_configs = dict()
+        for model_name, model_config in self.config.models.items():
+            inference_params = ModelInferenceConfig(
+                name=model_name,
+                outdir=target_dir // model_name,
+                type=model_config.type,
+                model_path=model_config.model,
+                batch_size=model_config.get("inference-batch-size")
+                or self.config.get("inference-batch-size")
+                or 8,
+                train_path=model_training_artifact.models[model_name].model_path,
+                max_length=model_config.get("max-lenght")
+                or self.config.get("max-length")
+                or 256,
+                tta=False,
+                ensmeble_weight=1,
+            )
+            json_path = inference_params.outdir / "inference_params.json"
+            save_json(inference_params.model_dump(mode="json"), json_path)
+            model_configs[model_name] = json_path
+
+        return MultiModelInferenceConfig(outdir=target_dir, models=model_configs)
