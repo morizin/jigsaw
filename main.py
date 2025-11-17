@@ -1,8 +1,8 @@
-from src.jigsaw.pipelines.base import BasePipelines
+from src.jigsaw.pipelines.base import BasePipeline
 
 if __name__ == "__main__":
     try:
-        pipeline = BasePipelines()
+        pipeline = BasePipeline()
         pipeline.kickoff()
     except Exception as e:
         raise e

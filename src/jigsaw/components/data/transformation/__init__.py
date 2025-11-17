@@ -42,7 +42,7 @@ class DataTransformationComponent:
                 final_dir.append(name)
 
         self.final_dir = "_".join(final_dir)
-        print(self.final_dir)
+
         length = (
             min(LENGTH, max(list(map(len, self.schemas.keys()))))
             + 15

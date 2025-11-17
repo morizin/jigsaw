@@ -10,12 +10,13 @@ warnings.filterwarnings("ignore")
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 PROJECT_NAME = __name__.split(".")[-1]
+__version__ = "0.25.0"
 
 logging_str: str = "%(asctime)s [%(levelname)s] : %(module)s : %(message)s"
-log_dir = "logs"
+LOG_DIR = "logs"
 timestamp = datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
-log_filepath = os.path.join(log_dir, f"{timestamp}.log")
-os.makedirs(log_dir, exist_ok=True)
+log_filepath = os.path.join(LOG_DIR, f"{timestamp}.log")
+os.makedirs(LOG_DIR, exist_ok=True)
 
 logging.basicConfig(
     level=logging.INFO,

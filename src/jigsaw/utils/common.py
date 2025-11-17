@@ -17,6 +17,16 @@ import pickle
 import torch
 import yaml
 import json
+import requests
+
+
+def is_internet_connected():
+    """Checks for an internet connection by attempting to reach Google."""
+    try:
+        requests.get("https://www.google.com", timeout=5)
+        return True
+    except requests.ConnectionError:
+        return False
 
 
 def get_os_type():

@@ -75,19 +75,6 @@ class TripletDataConfig(BaseModel):
     reversed: bool = False
 
 
-class TokenizerConfig(BaseModel):
-    max_length: int
-    truncation: bool | str
-    padding: str | bool
-
-
-class EngineConfig(BaseModel):
-    model_name: str
-    nepochs: int
-    learning_rate: float
-    train_batch_size: int
-    valid_batch_size: None | int = None
-    gradient_accumulation_steps: int
-    weight_decay: float | None
-    warmup_ratio: float | None
-    tokenizer: TokenizerConfig
+class ClassificationMetric(BaseModel):
+    roc_auc: float
+    accuracy: float

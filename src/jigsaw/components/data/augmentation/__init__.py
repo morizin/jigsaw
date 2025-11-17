@@ -73,10 +73,10 @@ class Augment(BaseModel):
 class Augmentor(BaseModel):
     augments: list[Augment]
     is_tta: bool = False
-    frac: float = 0.1
-    resample: int = 2
+    frac: float = 1
+    resample: int = 1
     include_original: bool = True
-    weight: float = 0.25
+    weight: float = 1
 
     @field_validator("augments", mode="before")
     @classmethod

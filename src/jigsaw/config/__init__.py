@@ -1,5 +1,5 @@
 import os
-from ..utils.common import seed_everything, load_yaml, load_json, get_hw_details
+from ..utils.common import seed_everything, load_yaml, save_json, get_hw_details
 from ..constants import (
     CONFIG_FILE_PATH,
     DATA_DIRECTORY_NAME,
@@ -11,21 +11,24 @@ from ..errors import DataNotFoundError, DirectoryNotFoundError, ConfigurationErr
 from ..components.data.augmentation import Augmentor
 
 from ..core import (
-    DataIngestionConfig,
+    FilePath,
+    Directory,
     DataSource,
-    DataValidationConfig,
     DataSchema,
     DataDriftConfig,
     TripletDataConfig,
-    DataTransformationConfig,
     DataSplitConfig,
-    EngineConfig,
-    TokenizerConfig,
+    DataIngestionConfig,
+    DataValidationConfig,
+    DataTransformationConfig,
     ModelTrainingConfig,
-    FilePath,
-    Directory,
+    MultiModelTrainingConfig,
+    ModelInferenceConfig,
+    MultiModelInferenceConfig,
     DataIngestionArtifact,
     DataValidationArtifact,
+    DataTransformationArtifact,
+    MultiModelTrainingArtifact,
 )
 from .. import logger, timestamp
 from box import ConfigBox
@@ -173,51 +176,124 @@ class ConfigurationManager:
         )
 
     @typechecked
-    def get_model_training_config(self) -> ModelTrainingConfig:
-        config = self.config.model_training
-        _ = self.get_data_transformation_config()
-        try:
-            engine_config = self.params[config.engine]
-        except Exception as e:
-            logger.error(f"TrainingArguments '{config.engine}' not found: {e}")
-            raise e
+    def get_model_inference_config(
+        self, model_training_artifact: MultiModelTrainingArtifact
+    ) -> MultiModelInferenceConfig:
+        target_dir = self.artifact_root // "inference"
+        model_configs = dict()
+        for model_name, model_config in self.config.models.items():
+            inference_params = ModelInferenceConfig(
+                name=model_name,
+                outdir=target_dir // model_name,
+                type=model_config.type,
+                model_path=model_config.model,
+                batch_size=model_config.get("inference-batch-size")
+                or self.config.get("inference-batch-size")
+                or 8,
+                train_path=model_training_artifact.models[model_name].model_path,
+                max_length=model_config.get("max-lenght")
+                or self.config.get("max-length")
+                or 256,
+                tta=False,
+                ensmeble_weight=1,
+            )
+            json_path = inference_params.outdir / "inference_params.json"
+            save_json(inference_params.model_dump(mode="json"), json_path)
+            model_configs[model_name] = json_path
 
-        engine_params = EngineConfig(
-            model_name=engine_config.model_name,
-            nepochs=engine_config.nepochs,
-            learning_rate=engine_config.learning_rate,
-            train_batch_size=engine_config.train_batch_size,
-            valid_batch_size=engine_config.get("valid_batch_size", None),
-            gradient_accumulation_steps=engine_config.get(
-                "gradient-accumulation-steps", 1
-            ),
-            weight_decay=engine_config.get("weight-decay", None),
-            warmup_ratio=engine_config.get("warmup-ratio", None),
-            tokenizer=TokenizerConfig(
-                max_length=engine_config.tokenizer.max_length,
-                truncation=engine_config.tokenizer.truncation,
-                padding=engine_config.tokenizer.padding,
-            ),
-        )
+        return MultiModelInferenceConfig(outdir=target_dir, models=model_configs)
 
-        schemas = []
-        for name in self.names:
-            if f"{self.final_dir}{name}" in os.listdir(
-                self.artifact_root.path / config.indir
-            ):
-                schema = self.get_data_schema(name)
-                schema.name = f"{self.final_dir}{name}"
-                if config.few_shot:
-                    schema.features = list(schema.schema)
-                del schema.schema
-                schemas.append(schema)
-            else:
-                logger.error(f'Data "{name}" doesn\'t exists)')
+    @typechecked
+    def get_model_training_config(
+        self, data_transformation_artifact: DataTransformationArtifact
+    ) -> MultiModelTrainingConfig:
+        target_dir = self.artifact_root // MODELS_DIRECTORY_NAME
+        model_configs = dict()
+        for model_name, model_config in self.config.models.items():
+            training_params = ModelTrainingConfig(
+                name=model_name,
+                outdir=target_dir // model_name,
+                type=model_config.type,
+                model=model_config.model,
+                augmentations=model_config.get("augmentations", False),
+                dataloader_pin_memory=model_config.get(
+                    "dataloader-pin-memory",
+                    self.config.get("dataloader-pin-memory", False),
+                ),
+                seed=model_config.get("seed", self.config.get("seed", 1234)),
+                optimizer=model_config.get(
+                    "optimizer", self.config.get("optimizer", "")
+                ),
+                max_grad_norm=model_config.get(
+                    "max-grad-norm", self.config.get("max-grad-norm", "")
+                ),
+                n_epochs=model_config.get("n-epochs", self.config.get("n-epochs", 1)),
+                learning_rate=model_config.get(
+                    "learning-rate", self.config.get("learning-rate", None)
+                ),
+                gradient_accumulation_steps=model_config.get(
+                    "gradient-accumulation-steps",
+                    self.config.get("gradient-accumulation-steps", None),
+                ),
+                weight_decay=model_config.get(
+                    "weight-decay", self.config.get("weight-decay", None)
+                ),
+                gradient_checkpointing=model_config.get(
+                    "gradient-checkpointing",
+                    self.config.get("gradient-checkpointing", False),
+                ),
+                train_file_path=data_transformation_artifact.combined_train_file,
+                train_batch_size=model_config.get(
+                    "train-batch-size", self.config.get("train-batch-size", None)
+                ),
+                valid_file_path=data_transformation_artifact.combined_test_file,
+                valid_batch_size=model_config.get(
+                    "valid-batch-size", self.config.get("valid-batch-size", None)
+                ),
+                eval_strategy=model_config.get(
+                    "eval-strategy", self.config.get("eval-strategy", "no")
+                ),
+                eval_steps=model_config.get(
+                    "eval-steps", self.config.get("eval-steps", None)
+                ),
+                eval_epochs=model_config.get(
+                    "eval-epochs", self.config.get("eval-epochs", None)
+                ),
+                logging_strategy=model_config.get(
+                    "logging-strategy", self.config.get("logging-strategy", "no")
+                ),
+                logging_steps=model_config.get(
+                    "logging-steps", self.config.get("logging-steps", None)
+                ),
+                logging_epochs=model_config.get(
+                    "logging-epochs", self.config.get("logging-epochs", None)
+                ),
+                save_strategy=model_config.get(
+                    "save-strategy", self.config.get("save-strategy", "no")
+                ),
+                save_steps=model_config.get(
+                    "save-steps", self.config.get("save-steps", None)
+                ),
+                save_epochs=model_config.get(
+                    "save-epochs", self.config.get("save-epochs", None)
+                ),
+                scheduler_type=model_config.get(
+                    "scheduler-type", self.config.get("scheduler-type", "cosine")
+                ),
+                warmup_ratio=model_config.get(
+                    "warmup-ratio", self.config.get("warmup-ratio", None)
+                ),
+                max_length=model_config.get(
+                    "max-length", self.config.get("max-length", 640)
+                ),
+                padding=model_config.get(
+                    "padding", self.config.get("padding", "longest")
+                ),
+                fold=model_config.get("fold", self.config.get("fold", -1)),
+            )
 
-        return ModelTrainingConfig(
-            outdir=Directory(path=self.artifact_root.path / config.outdir),
-            indir=Directory(path=self.artifact_root.path / config.indir),
-            fold=config.get("fold", -1),
-            engine=engine_params,
-            schemas=schemas,
-        )
+            json_path = training_params.outdir / "training_params.json"
+            save_json(training_params.model_dump(mode="json"), json_path)
+            model_configs[model_name] = json_path
+
+        return MultiModelTrainingConfig(outdir=target_dir, models=model_configs)
