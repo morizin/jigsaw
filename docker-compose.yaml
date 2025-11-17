@@ -1,0 +1,50 @@
+services:
+  grafana:
+    image: grafana/grafana
+
+    ports:
+      - ${GRAFANA_PORT:-3001}:3000
+
+    restart: unless-stopped
+
+    networks:
+      - jigsawNet
+
+  db:
+    image: postgres:17 
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+    volumes:
+      - jigsawData:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+
+    restart: unless-stopped
+    networks:
+      - jigsawNet
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+    networks:
+      - jigsawNet
+
+networks:
+  jigsawNet:
+    driver: bridge
+
+volumes:
+  jigsawData:

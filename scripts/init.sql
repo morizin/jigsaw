@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS TRACK_DATA(
+    ID BIGSERIAL PRIMARY KEY,
+    body TEXT,
+    violation FLOAT,
+    timestamp TIMESTAMP
+);

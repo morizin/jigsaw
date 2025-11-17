@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator
-from jigsaw.core import FilePath, Directory
-from jigsaw import log_dir as LOG_DIR
+from .io_types import FilePath, Directory
+from .. import LOG_DIR
 from .util_entity import (
     DataSchema,
     DataSource,
@@ -8,7 +8,6 @@ from .util_entity import (
     TripletDataConfig,
     DataSplitConfig,
 )
-from jigsaw.components.data.augmentation import Augmentor
 import json
 import os
 
@@ -45,7 +44,7 @@ class ModelTrainingConfig(BaseModel):
     outdir: Directory | FilePath
     type: Literal["text-classification", "triplet", "completion"]
     model: FilePath
-    augmentations: Optional[bool | Augmentor] = False
+    augmentations: Optional[bool] = False
     dataloader_pin_memory: bool = False
     seed: int
     optimizer: str
@@ -165,7 +164,7 @@ class ModelInferenceConfig(BaseModel):
     model_path: Directory | FilePath
     batch_size: Optional[int] = None
     train_path: Optional[Directory | FilePath] = None
-    tta: bool | Augmentor = False
+    tta: bool = False
     max_length: int = 256
     ensemble_weight: int = 1
 
