@@ -1,6 +1,5 @@
 from ..core import Directory, FilePath
 from ..components import Component
-from typing import Callable
 import os
 
 

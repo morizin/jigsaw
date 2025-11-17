@@ -1,5 +1,3 @@
-from .... import logger
-from ....core import Directory
 from ....core.config_entity import DataTransformationConfig
 from ....core.artifact_entity import DataTransformationArtifact
 
