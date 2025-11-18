@@ -43,6 +43,11 @@ jobs:
         uv build
         uv export --format requirements.txt -o ./dist/requirements.txt --no-hashes
 
+    - name: Initialize the jigsaw dataset
+      run: |
+        kaggle datasets init -p ./dist/
+        sed -i 's/INSERT_[A-Z_]*/jigsaw/g' ./dist/dataset-metadata.json
+
     - name: Publish it to Kaggle
       run: |
         message="$(git log -1 --pretty=%s)"
