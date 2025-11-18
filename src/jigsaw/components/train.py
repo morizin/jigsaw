@@ -25,6 +25,7 @@ from .data.transformation import DataTransformationComponent
 from transformers.utils import is_torch_bf16_gpu_available
 from sklearn.metrics import roc_auc_score, accuracy_score
 import mlflow
+import os
 from scipy.special import softmax as softmax_scipy
 import numpy as np
 
@@ -42,11 +43,13 @@ class ModelTrainingComponent:
         self.exp_name = f"{PROJECT_NAME}_{config.name.replace('/', '_')}"
 
     def get_dataset(self, valid=False):
-        data = load_csv(
+        file_path = (
             self.transform_artifact.valid_file_path
             if valid
             else self.transform_artifact.train_file_path
         )
+
+        data = load_csv(file_path)
         if self.transform_config.augmentations:
             augs = Augmentor(
                 augments=[["url_to_semantics", 1.0]],
