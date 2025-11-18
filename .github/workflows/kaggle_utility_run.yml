@@ -6,7 +6,7 @@ on:
     paths-ignore: [ "README.md" ]
 
 jobs:     
-  build:
+  build-and-export:
     runs-on: ubuntu-latest
     env:
       KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
@@ -43,12 +43,17 @@ jobs:
         uv build
         uv export --format requirements.txt -o ./dist/requirements.txt --no-hashes
 
-    - name: Initialize the jigsaw dataset
-      run: |
-        kaggle datasets init -p ./dist/
-        sed -i 's/INSERT_[A-Z_]*/jigsaw/g' ./dist/dataset-metadata.json
-
     - name: Publish it to Kaggle
       run: |
         message="$(git log -1 --pretty=%s)"
         kaggle datasets version -m "Version ${{ steps.buildNexport.outputs.version }} : $message" -p ./dist
+    
+    - name: echo status of Uploaded Kaggle Dataset
+      run: echo "$(kaggle kernels status morizin/jigsaw-wheels)"
+      
+    # - name: Check Status of Uploaded Kaggle Dataset
+    #   run: | 
+    #     while [[ '$(kaggle kernels status morizin/jigsaw-wheels | egrep -o "[A-Z]{2,}")' == "RUNNING" ]]; do
+    #         pass
+    #     done
+        
