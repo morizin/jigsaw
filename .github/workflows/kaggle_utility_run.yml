@@ -1,0 +1,54 @@
+name: Kaggle utility script Workflow
+
+on:
+  push: 
+    branches: [ "main" ]
+    paths-ignore: [ "README.md" ]
+
+jobs:     
+  build:
+    runs-on: ubuntu-latest
+    env:
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+    - name: Checking out Code
+      uses: actions/checkout@v4
+
+    - name: Setup up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip3 install uv
+        pip3 install kaggle
+        rm -f uv.lock
+
+    - name: Building the code and export packages
+      id: buildNexport
+      run: |
+        rm -rf ./dist/jigsaw-0.*
+        uv version --bump patch 
+        version=$(uv version --short)
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        uv sync
+        uv build
+        uv export --format requirements.txt -o ./dist/requirements.txt --no-hashes
+
+    - name: Initialize the jigsaw dataset
+      run: |
+        kaggle datasets init -p ./dist/
+        sed -i 's/INSERT_[A-Z_]*/jigsaw/g' ./dist/dataset-metadata.json
+
+    - name: Publish it to Kaggle
+      run: |
+        message="$(git log -1 --pretty=%s)"
+        kaggle datasets version -m "Version ${{ steps.buildNexport.outputs.version }} : $message" -p ./dist

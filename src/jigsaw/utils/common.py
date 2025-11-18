@@ -105,7 +105,9 @@ def unzip_file(filepath: ZipFile, outdir: Directory):
 
 
 @typechecked
-def save_pickle(data: Any, path: FilePath, verbose=int(os.getenv("VERBOSITY"))) -> Any:
+def save_pickle(
+    data: Any, path: FilePath, verbose=int(os.getenv("VERBOSITY", 0))
+) -> Any:
     try:
         data = pickle.dump(data, open(path, "wb"))
         if verbose:
@@ -117,7 +119,7 @@ def save_pickle(data: Any, path: FilePath, verbose=int(os.getenv("VERBOSITY"))) 
 
 
 @typechecked
-def load_pickle(path: FilePath, verbose=int(os.getenv("VERBOSITY"))) -> Any:
+def load_pickle(path: FilePath, verbose=int(os.getenv("VERBOSITY", 0))) -> Any:
     try:
         data = pickle.load(open(path, "rb"))
         if verbose:
@@ -133,7 +135,7 @@ def load_pickle(path: FilePath, verbose=int(os.getenv("VERBOSITY"))) -> Any:
 
 
 @typechecked
-def save_yaml(data: Any, path: FilePath, verbose=int(os.getenv("VERBOSITY"))):
+def save_yaml(data: Any, path: FilePath, verbose=int(os.getenv("VERBOSITY", 0))):
     try:
         path = Directory(path=os.path.dirname(path)) / os.path.basename(path)
         path = str(path)
@@ -153,7 +155,7 @@ def save_yaml(data: Any, path: FilePath, verbose=int(os.getenv("VERBOSITY"))):
 
 @typechecked
 def load_yaml(
-    path: FilePath, box=True, verbose=int(os.getenv("VERBOSITY"))
+    path: FilePath, box=True, verbose=int(os.getenv("VERBOSITY", 0))
 ) -> dict | ConfigBox:
     if isinstance(path, Path):
         path = path.as_posix()
@@ -178,7 +180,7 @@ def load_yaml(
 def save_csv(
     data: pd.DataFrame,
     path: str | Path,
-    verbose=int(os.getenv("VERBOSITY")),
+    verbose=int(os.getenv("VERBOSITY", 0)),
 ):
     try:
         Directory(path=os.path.split(path)[0])
@@ -193,7 +195,7 @@ def save_csv(
 @typechecked
 def load_csv(
     path: FilePath,
-    verbose=int(os.getenv("VERBOSITY")),
+    verbose=int(os.getenv("VERBOSITY", 0)),
 ) -> pd.DataFrame:
     try:
         data = pd.read_csv(path)
@@ -212,7 +214,7 @@ def load_csv(
 def save_json(
     data: Any,
     path: FilePath,
-    verbose=int(os.getenv("VERBOSITY")),
+    verbose=int(os.getenv("VERBOSITY", 0)),
 ):
     try:
         path = Directory(path=os.path.dirname(path)) / os.path.basename(path)
@@ -230,7 +232,7 @@ def save_json(
 @typechecked
 def load_json(
     path: FilePath,
-    verbose=int(os.getenv("VERBOSITY")),
+    verbose=int(os.getenv("VERBOSITY", 0)),
 ) -> dict:
     try:
         data = json.load(open(path))
