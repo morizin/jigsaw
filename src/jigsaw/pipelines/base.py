@@ -1,4 +1,4 @@
-from src.jigsaw.config import ConfigurationManager
+from ..config import ConfigurationManager
 from ..core import (
     DataIngestionConfig,
     DataValidationConfig,
