@@ -54,7 +54,7 @@ jobs:
         kaggle datasets version -m "Version ${{ steps.buildNexport.outputs.version }} : $message" -p ./dist
     
     - name: echo status of Uploaded Kaggle Dataset
-      run: echo "$(kaggle kernels status morizin/jigsaw-wheels)"
+      run: echo "$(kaggle datasets status morizin/jigsaw)"
       
     # - name: Check Status of Uploaded Kaggle Dataset
     #   run: | 
