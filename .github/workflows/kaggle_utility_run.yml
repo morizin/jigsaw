@@ -84,9 +84,12 @@ jobs:
     - name: Initialize the Kaggle Notebook
       run: kaggle kernels push --path ./notebooks/installation
 
-    - name: Checks the Status of Kaggle Notebook
+    - name: Check the Status of Kaggle Notebook
       run: |
-        while [[ "$(kaggle kernels status morizin/jigsaw-wheels | grep -Po 'KernelWorkerStatus\.\K[A-Z]+')" == "RUNNING" ]]; do
+        while true; do
+          status="$(kaggle kernels status morizin/jigsaw-wheels | grep -Po 'KernelWorkerStatus\.\K[A-Z]+')"
+          echo "Kernel status: $status"
+          [[ "$status" == "RUNNING" ]] || break
           sleep 1
         done
 
