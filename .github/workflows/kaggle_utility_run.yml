@@ -82,6 +82,12 @@ jobs:
         pip3 install kaggle
     
     - name: Initialize the Kaggle Notebook
+      run: kaggle kernels push --path ./notebooks/installation
+
+    - name: Checks the Status of Kaggle Notebook
       run: |
-        kaggle kernels push --path ./notebooks/installation
+        while [[ "$(kaggle kernels status morizin/jigsaw-wheels | grep -Po 'KernelWorkerStatus\.\K[A-Z]+')" == "RUNNING" ]]; do
+          sleep 1
+        done
+
     
