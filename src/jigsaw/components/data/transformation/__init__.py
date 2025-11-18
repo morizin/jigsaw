@@ -92,6 +92,10 @@ class DataTransformationComponent:
             test_data = pd.concat(test_data, axis=0).reset_index(drop=True)
             save_csv(
                 test_data,
+                self.config.outdir // f"{self.final_dir}_combined" / "valid.csv",
+            )
+            save_csv(
+                test_data,
                 self.config.outdir // f"{self.final_dir}_combined" / "test.csv",
             )
 
