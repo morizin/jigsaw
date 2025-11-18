@@ -25,7 +25,6 @@ from .data.transformation import DataTransformationComponent
 from transformers.utils import is_torch_bf16_gpu_available
 from sklearn.metrics import roc_auc_score, accuracy_score
 import mlflow
-import os
 from scipy.special import softmax as softmax_scipy
 import numpy as np
 
@@ -141,7 +140,7 @@ class ModelTrainingComponent:
         return ModelTrainingArtifact(
             name=self.config.name,
             model_path=self.config.outdir,
-            metrics=ClassificationMetric(roc_auc=0.5, accuracy=0.5),
+            metrics=metrics,
         )
 
     def train(self):
