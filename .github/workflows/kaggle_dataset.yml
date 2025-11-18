@@ -9,6 +9,9 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11"]
+    env:
+        KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+        KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
 
     steps:
     - name: Checking out Code
@@ -29,14 +32,13 @@ jobs:
     - name: Building the code and publish it to Kaggle ${{ matrix.python-version }}
       run: |
         ./scripts/publish_kaggle.sh <<< $(git log -1 --pretty=%s)
-      env:
-        KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-        KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-        VERBOSITY: "1"
 
   download-wheels:
     runs-on: ubuntu-latest
     needs: build
+    env:
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -66,9 +68,6 @@ jobs:
         cp requirements.txt ./wheels/
         kaggle datasets init --path ./wheels
         sed -i 's/INSERT_[^"]*/jigsaw-wheel/g' ./wheels/dataset-metadata.json
-      env:
-        KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-        KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
 
     - name: Export Wheels into the folder
       run: pip3 wheel -r requirements.txt -w ./wheels
@@ -81,9 +80,7 @@ jobs:
         else
           kaggle datasets create --path ./wheels
         fi
-      env:
-        KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-        KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+      
 
     - name: Check status of the dataset
       run: echo "$(kaggle datasets status morizin/jigsaw)"
