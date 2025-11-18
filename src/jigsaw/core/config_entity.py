@@ -33,6 +33,8 @@ class DataTransformationConfig(BaseModel):
     indir: Directory
     schemas: dict[str, DataSchema]
     zero_shot: bool
+    train_splits: tuple[float, float]
+    test_splits: tuple[float, float]
     augmentations: bool
     pairwise: bool
     splitter: DataSplitConfig | bool
@@ -121,9 +123,8 @@ class ModelTrainingConfig(BaseModel):
         elif self.logging_steps:
             self.logging_strategy = "steps"
 
-        if self.logging_strategy != "no" and (
-            self.logging_dir is None or os.path.basename(self.logging_dir) != self.name
-        ):
+        if self.logging_strategy != "no":
+            # self.logging_dir is None or os.path.basename(self.logging_dir) != self.name
             self.logging_dir = str(
                 Directory(path=self.logging_dir or LOG_DIR) // self.name
             )

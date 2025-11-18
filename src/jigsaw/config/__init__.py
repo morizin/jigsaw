@@ -168,6 +168,8 @@ class ConfigurationManager:
             outdir=self.artifact_root // DATA_DIRECTORY_NAME // TRANSFORM_DIR_NAME,
             indir=data_validation_artifact.valid_outdir,
             schemas=data_validation_artifact.schemas,
+            train_splits=tuple(transform_config["train-splits"]),
+            test_splits=tuple(transform_config.get("test-splits", [0, 0])),
             splitter=splitter,
             triplet=triplet_config,
             pairwise=transform_config.get("pairwise", False),

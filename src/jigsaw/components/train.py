@@ -39,6 +39,7 @@ class ModelTrainingComponent:
         self.transform_artifact: DataTransformationArtifact = (
             DataTransformationComponent(self.transform_config)()
         )
+        print(self.transform_artifact)
         self.exp_name = f"{PROJECT_NAME}_{config.name.replace('/', '_')}"
 
     def get_dataset(self, valid=False):
@@ -141,6 +142,7 @@ class ModelTrainingComponent:
             name=self.config.name,
             model_path=self.config.outdir,
             metrics=metrics,
+            # metrics=ClassificationMetric(roc_auc=0.5, accuracy=0.5),
         )
 
     def train(self):

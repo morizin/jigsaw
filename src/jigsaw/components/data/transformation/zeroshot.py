@@ -33,7 +33,8 @@ def zero_shot_transform(
             features += (
                 [schema.target] if isinstance(schema.target, str) else schema.target
             )
-            zeroshot.append(data[features])
+
+        zeroshot.append(data[features])
 
         for violation in ["positive", "negative"]:
             for i in range(1, 3):
