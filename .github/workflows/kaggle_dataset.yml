@@ -83,7 +83,7 @@ jobs:
       
 
     - name: Check status of the dataset
-      run: echo "$(kaggle datasets status morizin/jigsaw)"
+      run: echo "$(kaggle datasets status morizin/jigsaw-wheel)"
         # while [[ '$(kaggle datasets status morizin/jigsaw-wheel | egrep -o "[A-Z]{2,}")' != "RUNNING" ]]; do
         #     pass
         # done
