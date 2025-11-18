@@ -89,8 +89,9 @@ jobs:
         while true; do
           status="$(kaggle kernels status morizin/jigsaw-wheels | grep -Po 'KernelWorkerStatus\.\K[A-Z]+')"
           echo "Kernel status: $status"
-          [[ "$status" != "COMPLETE" ]] || [[ "$status" != "ERROR" ]] || break
-          sleep 5
+          [[ "$status" != "COMPLETE" ]] || break
+          [[ "$status" == "ERROR" ]] && break
+          sleep 60
         done
 
     
