@@ -56,9 +56,9 @@ jobs:
     - name: echo status of Uploaded Kaggle Dataset
       run: echo "$(kaggle datasets status morizin/jigsaw)"
       
-    # - name: Check Status of Uploaded Kaggle Dataset
-    #   run: | 
-    #     while [[ '$(kaggle kernels status morizin/jigsaw-wheels | egrep -o "[A-Z]{2,}")' == "RUNNING" ]]; do
-    #         pass
-    #     done
+    - name: Check Status of Uploaded Kaggle Dataset
+      run: | 
+        while [[ '$(kaggle datasets status morizin/jigsaw | egrep -o "[A-Z]{2,}")' != "RUNNING" ]]; do
+            pass
+        done
         
