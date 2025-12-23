@@ -1,3 +1,0 @@
-[submodule "kaggle-api"]
-	path = kaggle-api
-	url = https://github.com/Kaggle/kaggle-api.git

@@ -6,9 +6,9 @@ debug: true
 data:
   sources:
     competition:
-      source: kaggle
-      type: competition
-      uri: "jigsaw-agile-community-rules"
+      source: local
+      type: dir
+      uri: "/kaggle/input/jigsaw-agile-community-rules"
 
   validation:
     statistics: false
@@ -47,12 +47,12 @@ models:
         type: "text-classification"
         model: "/kaggle/input/huggingfacedebertav3variants/deberta-v3-base"
         transforms:
-          train-splits: [0.7, 0]
+          train-splits: [1, 0.3]
           test-splits: [1, 0]
           zero-shot: true
           augmentations: true
         train-batch-size: 32
-        n-epochs: 0.1
+        n-epochs: 3
         learning-rate: 2e-5
         gradient-accumulation-steps: 1
         padding: 'longest'
@@ -63,12 +63,12 @@ models:
         type: "text-classification"
         model: "/kaggle/input/huggingfacedebertav3variants/deberta-v3-base"
         transforms:
-          train-splits: [1, 0]
-          test-splits: [0.3, 1]
+          train-splits: [0.01, 0.3]
+          test-splits: [1, 0]
           zero-shot: true
-          augmentations: true
+          augmentations: false
         train-batch-size: 32
-        n-epochs: 0.1
+        n-epochs: 3
         learning-rate: 2e-5
         gradient-accumulation-steps: 1
         padding: 'longest'
